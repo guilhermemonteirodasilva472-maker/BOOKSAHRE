@@ -1,0 +1,6 @@
+{
+  "name": "BookShare",
+  "description": "Uma Landing Page minimalista, moderna e divertida para a comunidade de leitores e autores compartilharem suas leituras.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
