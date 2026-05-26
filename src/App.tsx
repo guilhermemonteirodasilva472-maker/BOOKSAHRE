@@ -1018,62 +1018,45 @@ export default function App() {
               })}
             </div>
 
-            {/* Split layout: Books on Left, Sidebar Scanner on Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              
-              {/* Books listing */}
-              <div className="lg:col-span-8">
-                {filteredBooks.length === 0 ? (
-                  <div className="text-center py-16 bg-[#12131A] border border-dashed border-zinc-800 rounded-2xl max-w-md mx-auto p-8 relative">
-                    <span className="text-4xl block mb-2 select-none">🕵️‍♂️</span>
-                    <h4 className="font-serif font-black text-slate-100 text-base">
-                      Nenhuma obra ou evidência catalogada
-                    </h4>
-                    <p className="text-xs text-slate-400 mt-2 leading-relaxed font-sans">
-                      Não encontramos obras com o termo "{searchQuery}" inseridas nesta categoria. Tente limpar os filtros de busca ou cadastre um novo dossiê literário!
-                    </p>
-                    <button
-                      onClick={() => {
-                        setSearchQuery('');
-                        setSelectedCategory('Todas');
-                      }}
-                      className="mt-4 text-xs font-bold text-red-500 hover:underline"
-                    >
-                      Restaurar Filtros de Busca
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    {filteredBooks.map((book) => (
-                      <BookCard 
-                        key={book.id}
-                        book={book}
-                        onLike={handleLike}
-                        onAddComment={handleAddComment}
-                        onAddToCart={handleAddToCart}
-                        isAdmin={isAdminMode}
-                        onEdit={handleTriggerEdit}
-                        onDelete={handleDeleteBook}
-                        onMoveUp={handleMoveUp}
-                        onMoveDown={handleMoveDown}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Sidebar scanner widget and dynamic guide */}
-              <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-
-                {/* Additional charming widget detail: Sopro Místico Pledge */}
-                <div className="bg-[#12131A] border border-[#2D303D] p-5 rounded-2xl shadow-sm space-y-3 font-serif">
-                  <h5 className="font-black text-slate-200 text-xs uppercase font-mono tracking-wider">🔬 O Compromisso Forense</h5>
-                  <p className="text-[11px] text-slate-400 leading-relaxed font-sans font-medium">
-                    Todas as nossas obras acompanham embalagem reforçada tipo envelope Kraft anti-impacto e um marcador de páginas personalizado focado em suspense policial. Toda compra de simulação gera faturamentos estruturados para download e conciliação!
+            {/* Full-width layout for Books catalog */}
+            <div className="w-full">
+              {filteredBooks.length === 0 ? (
+                <div className="text-center py-16 bg-[#12131A] border border-dashed border-zinc-800 rounded-2xl max-w-md mx-auto p-8 relative">
+                  <span className="text-4xl block mb-2 select-none">🕵️‍♂️</span>
+                  <h4 className="font-serif font-black text-slate-100 text-base">
+                    Nenhuma obra ou evidência catalogada
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed font-sans">
+                    Não encontramos obras com o termo "{searchQuery}" inseridas nesta categoria. Tente limpar os filtros de busca ou cadastre um novo dossiê literário!
                   </p>
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCategory('Todas');
+                    }}
+                    className="mt-4 text-xs font-bold text-red-500 hover:underline"
+                  >
+                    Restaurar Filtros de Busca
+                  </button>
                 </div>
-              </div>
-
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredBooks.map((book) => (
+                    <BookCard 
+                      key={book.id}
+                      book={book}
+                      onLike={handleLike}
+                      onAddComment={handleAddComment}
+                      onAddToCart={handleAddToCart}
+                      isAdmin={isAdminMode}
+                      onEdit={handleTriggerEdit}
+                      onDelete={handleDeleteBook}
+                      onMoveUp={handleMoveUp}
+                      onMoveDown={handleMoveDown}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Quick summary line under bookshelf */}
