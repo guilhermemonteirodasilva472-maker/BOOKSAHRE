@@ -1,214 +1,379 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @theme {
-  --font-sans: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Lora', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', 'Lora', serif;
+  --font-text: 'Lora', 'Georgia', serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
 }
 
 :root {
-  --color-bg-base: #FDFCFB;
-  --color-text-primary: #111827;
-  --color-text-secondary: #4B5563;
+  /* Dark Investigator Palette */
+  --color-parchment-bg: #08090C;
+  --color-parchment-dark: #111218;
+  --color-parchment-border: #2D303D;
   
-  --color-pastel-lavender: #EDE9FE;
-  --color-active-lavender: #8B5CF6;
-  --color-hover-lavender: #7C3AED;
+  --color-magic-lavender: #EF4444;
+  --color-magic-lavender-pastel: #2E1414;
   
-  --color-pastel-mint: #D1FAE5;
-  --color-active-mint: #10B981;
-  --color-hover-mint: #059669;
+  --color-magic-forest: #991B1B;
+  --color-magic-forest-light: #1F0D0D;
   
-  --color-pastel-coral: #FCECE9;
-  --color-active-coral: #F97316;
-  --color-hover-coral: #EA580C;
+  --color-magic-gold: #B91C1C;
+  --color-magic-gold-light: #1C0D0D;
 
-  --color-pastel-yellow: #FEF9E5;
-  --color-active-yellow: #F59E0B;
+  --color-magic-sunset: #DC2626;
+  --color-magic-sunset-light: #2D1010;
 }
 
 body {
-  background-color: var(--color-bg-base);
-  color: var(--color-text-primary);
+  background-color: var(--color-parchment-bg);
+  background-image: 
+    radial-gradient(rgba(239, 68, 68, 0.08) 1px, transparent 1px),
+    radial-gradient(rgba(0, 0, 0, 0.95) 2px, transparent 2px);
+  background-size: 24px 24px, 120px 120px;
+  color: #E2E8F0;
   font-family: var(--font-sans);
   overflow-x: hidden;
   scroll-behavior: smooth;
+  position: relative;
 }
 
-/* Scrollbar customizations */
+/* Elegant Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #FDFCFB;
+  background: var(--color-parchment-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #E5E7EB;
+  background: var(--color-parchment-border);
+  border: 2px solid var(--color-parchment-bg);
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #D1D5DB;
+  background: #EF4444;
 }
 
-/* Playful Geometric Balance button */
-.fun-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 12px 28px;
-  border-radius: 9999px; /* Rounded full as in design */
-  background-color: var(--color-active-mint);
-  color: #FFFFFF;
-  border: none;
-  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2), 0 4px 6px -4px rgba(16, 185, 129, 0.2);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+/* Custom Page Turning Dividers */
+.turning-page-divider {
+  position: relative;
+  height: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0%2C0 C150%2C90 350%2C120 600%2C120 C850%2C120 1050%2C90 1200%2C0 L1200%2C120 L0%2C120 Z' fill='%23111218'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  width: 100%;
 }
 
-.fun-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.25), 0 8px 10px -6px rgba(16, 185, 129, 0.25);
-  background-color: var(--color-hover-mint);
+.turning-page-divider-up {
+  position: relative;
+  height: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0%2C120 C150%2C30 350%2C0 600%2C0 C850%2C0 1050%2C30 1200%2C120 L1200%2C0 L0%2C0 Z' fill='%23111218'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  width: 100%;
+  z-index: 10;
 }
 
-.fun-button:active {
-  transform: translateY(1px);
+/* Parchment elements - imitating delicate vintage yellowed book pages */
+.parchment-sheet {
+  background-color: #111218;
+  border: 1px solid var(--color-parchment-border);
+  box-shadow: 
+    0 4px 20px -2px rgba(0, 0, 0, 0.7),
+    0 1px 3px rgba(0, 0, 0, 0.45),
+    inset 0 0 40px rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  position: relative;
 }
 
-/* Secondary softer button style */
-.fun-button-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 0.9rem;
-  padding: 10px 24px;
-  border-radius: 9999px;
-  border: 2px solid #E5E7EB;
-  background-color: #FFFFFF;
-  color: var(--color-text-secondary);
-  transition: all 0.2s ease;
-  cursor: pointer;
+/* Styled Double Book Margin border */
+.parchment-sheet::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  pointer-events: none;
+  border-radius: 10px;
 }
 
-.fun-button-secondary:hover {
-  border-color: var(--color-active-lavender);
-  color: var(--color-active-lavender);
-  background-color: #FDFCFB;
-  transform: translateY(-1px);
-}
-
-/* Geometric balance card style */
-.interactive-card {
-  background: #FFFFFF;
-  border: 1px solid #F3F4F6;
-  border-radius: 32px; /* Super curves from design */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+/* Magical Book Card style */
+.book-card-magic {
+  background-color: #12131A;
+  border: 1px solid var(--color-parchment-border);
+  border-bottom: 4px solid #1C1E26;
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.5),
+    inset 0 0 20px rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.interactive-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
-  border-color: #EDE9FE;
-}
-
-/* Stylish book spine aesthetic matching modern geometric design */
-.book-cover-wrap {
   position: relative;
   overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
 }
 
-.book-cover-spine {
+.book-card-magic:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    0 16px 28px rgba(0, 0, 0, 0.8),
+    inset 0 0 30px rgba(0, 0, 0, 0.65);
+  border-color: #EF4444;
+  border-bottom-color: #EF4444;
+}
+
+/* Magical Ribbon Bookmarks for discount/tags */
+.bookmark-ribbon {
+  position: absolute;
+  top: -2px;
+  right: 15px;
+  width: 38px;
+  height: 55px;
+  background: var(--color-magic-sunset);
+  color: white;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: center;
+  font-size: 11px;
+  padding-top: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  z-index: 20;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 82%, 0% 100%);
+  border-top: none;
+  transition: transform 0.2s ease;
+}
+
+.bookmark-ribbon-gold {
+  background: var(--color-magic-gold);
+}
+
+.book-card-magic:hover .bookmark-ribbon {
+  transform: translateY(4px);
+}
+
+/* Classic Book Covering design */
+.book-bound-spine {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 12px;
-  background: linear-gradient(to right, rgba(0,0,0,0.15) 0%, rgba(255,255,255,0.08) 25%, rgba(0,0,0,0.04) 50%, rgba(255,255,255,0.12) 75%, rgba(0,0,0,0.08) 100%);
-  border-right: 1px solid rgba(0,0,0,0.06);
+  width: 14px;
+  background: linear-gradient(to right, rgba(0,0,0,0.22) 0%, rgba(255,255,255,0.08) 25%, rgba(0,0,0,0.06) 50%, rgba(255,255,255,0.15) 75%, rgba(0,0,0,0.1) 100%);
+  border-right: 1px solid rgba(0,0,0,0.12);
   z-index: 10;
 }
 
-/* Beautiful floating indicator elements */
-@keyframes hoverFloat {
+.book-pages-stack {
+  position: absolute;
+  right: -2px;
+  top: 6px;
+  bottom: 6px;
+  width: 6px;
+  background: repeating-linear-gradient(to bottom, #FAF6EE, #FAF6EE 2px, #E5DCBF 3px, #E5DCBF 4px);
+  border-radius: 0 3px 3px 0;
+  border: 1px solid var(--color-parchment-border);
+  border-left: none;
+}
+
+/* Old Paper Textured buttons */
+.button-magic-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #991B1B, #450A0A);
+  color: #FFFFFF;
+  border: 1px solid #7F1D1D;
+  box-shadow: 
+    0 4px 12px rgba(185, 28, 28, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.button-magic-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 10px 20px rgba(185, 28, 28, 0.35),
+    inset 0 1px 2px rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, #B91C1C, #5C0B0B);
+}
+
+.button-magic-primary:active {
+  transform: translateY(1px);
+}
+
+/* Secondary Button - Parchment key style */
+.button-magic-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  border: 1px solid #2D303D;
+  background-color: #12131A;
+  color: #CBD5E1;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.button-magic-secondary:hover {
+  border-color: #EF4444;
+  color: #EF4444;
+  background-color: #2D1010;
+  transform: translateY(-1px);
+}
+
+/* Magical Float Animations */
+@keyframes magicalFloat {
   0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-6px) rotate(1.5deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
   100% { transform: translateY(0px) rotate(0deg); }
 }
 
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes magicalSparkle {
+  0%, 100% { opacity: 0.4; transform: scale(1); filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.2)); }
+  50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8)); }
 }
 
-.animate-float {
-  animation: hoverFloat 6s ease-in-out infinite;
+.animate-magical-float {
+  animation: magicalFloat 6s ease-in-out infinite;
 }
 
-.animate-spin-slow {
-  animation: spinSlow 12s linear infinite;
+.animate-magical-sparkle {
+  animation: magicalSparkle 3s ease-in-out infinite;
 }
 
-/* Glowing background blob standard modern visual style */
-.bg-blob-lavender {
+/* Glowing Aura for highlighted features */
+.aura-magic-lavender {
   position: absolute;
-  width: 450px;
-  height: 450px;
-  background: rgba(139, 92, 246, 0.08); /* #8B5CF6 */
-  filter: blur(120px);
-  border-radius: 50%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.07) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 
-.bg-blob-mint {
+.aura-magic-gold {
   position: absolute;
-  width: 400px;
-  height: 400px;
-  background: rgba(16, 185, 129, 0.08); /* #10B981 */
-  filter: blur(100px);
-  border-radius: 50%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(192, 146, 40, 0.06) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 
-.bg-blob-coral {
-  position: absolute;
-  width: 350px;
-  height: 350px;
-  background: rgba(249, 115, 22, 0.08); /* #F97316 */
-  filter: blur(100px);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
+/* Cart & Sliders Custom Animation Classes */
+.slide-in-right {
+  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Custom categories pills */
-.category-pill {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  padding: 8px 18px;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-  border: 1px solid #E5E7EB;
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* --- THE 3D BOOK STRUCTURE AND PERSPECTIVE CLASSES --- */
+.three-d-book-container {
+  perspective: 1500px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.three-d-book {
+  width: 170px;
+  height: 245px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: rotateY(-25deg) rotateX(12deg) rotateZ(-3deg);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.category-pill:hover {
-  border-color: var(--color-active-lavender);
-  color: var(--color-active-lavender);
-  transform: translateY(-1px);
+.three-d-book:hover {
+  transform: rotateY(-42deg) rotateX(16deg) rotateZ(-1deg) scale(1.05);
 }
+
+.three-d-book-cover-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: translateZ(12px); /* Half book thickness */
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  border-radius: 2px 8px 8px 2px;
+  box-shadow: 10px 10px 25px rgba(28, 20, 10, 0.35);
+  border-left: 3px solid rgba(255, 255, 255, 0.15);
+}
+
+.three-d-book-spine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px; /* thickness */
+  height: 100%;
+  transform: rotateY(-90deg) translateZ(12px);
+  transform-style: preserve-3d;
+  border-radius: 2px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.three-d-book-page-block {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 10px;
+  width: 20px; /* Book thickness minus cover offset */
+  height: calc(100% - 8px);
+  transform: rotateY(90deg) translateZ(154px); /* (Book width 170 - thickness 10-15ish) */
+  background: repeating-linear-gradient(90deg, #FCFAF2, #FCFAF2 2px, #E5DCBF 3px, #E5DCBF 4px);
+  border: 1px solid var(--color-parchment-border);
+  box-shadow: inset 1px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.three-d-book-cover-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotateY(180deg) translateZ(12px);
+  border-radius: 8px 2px 2px 8px;
+  box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Magical scan line effect overlay */
+.scan-line-animation {
+  background: linear-gradient(to bottom, transparent, rgba(239, 68, 68, 0.7), transparent);
+  height: 15px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  animation: scanLine 2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scanLine {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+

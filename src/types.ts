@@ -14,25 +14,37 @@ export interface Book {
   id: string;
   title: string;
   author: string;
-  isAuthored: boolean; // Indica se é uma obra autoral de um usuário
-  category: 'Indicação' | 'Leitura Atual' | 'Obra Autoral';
-  curatorName: string; // Quem indicou / escreveu
-  curatorRole?: string; // Ex: "Amante de Sci-Fi", "Escritor Aspirante", etc.
-  comment: string; // Comentário principal em formato de balão
-  likes: number; // Quantidade de likes
-  stars: number; // Avaliação de 1 a 5 estrelas
+  price: number;
+  description: string;
+  isAuthored: boolean; // Indica se é uma obra autoral
+  category: 'Thriller Psicológico' | 'Dark Romance' | 'Suspense Policial' | 'Terror Mentis';
+  discount?: number; // Porcentagem do desconto (ex: 15 para 15% de desconto)
+  coverImage?: string; // Capa em formato Base64 DataURL ou URL
   coverStyle: {
     gradientStart: string;
     gradientEnd: string;
-    iconName: string; // Nome do ícone da Lucide
-    textColor: string; // Ex: '#FFFFFF' ou '#1F2226'
+    iconName: string; // Ícone temático da Lucide
+    textColor: string;
   };
+  likes: number;
+  stars: number; // Avaliação de 1 a 5 estrelas
   commentsList: Comment[];
   createdAt: string;
 }
 
-export interface CommunityStat {
-  label: string;
-  value: string | number;
-  colorClass: string;
+export interface CartItem {
+  book: Book;
+  quantity: number;
+}
+
+export interface GoogleSheetsRowFormat {
+  dataHora: string;
+  idPedido: string;
+  nomeCliente: string;
+  cep: string;
+  livrosComprados: string;
+  valorProdutos: string;
+  valorFrete: string;
+  valorTotal: string;
+  metodoEnvio: string;
 }

@@ -1,6 +1,6 @@
 {
-  "name": "BookShare",
-  "description": "Uma Landing Page minimalista, moderna e divertida para a comunidade de leitores e autores compartilharem suas leituras.",
+  "name": "Livraria Sopro Mágico",
+  "description": "Uma charmosa e performática livraria virtual autoral e mágica, com sacola integrada, cálculo de CEP Correios e exportador místico de relatórios para Google Sheets.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

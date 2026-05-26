@@ -10,69 +10,69 @@ export default function Features() {
   const items = [
     {
       id: 1,
-      title: '1. Indique seu favorito',
-      desc: 'Compartilhe aquele livro extraordinário que mudou sua perspectiva ou que te fez sorrir nos domingos frios.',
-      icon: 'Bookmark',
-      pastelBg: 'bg-[#EDE9FE]', // Lavender pastel
-      accentColor: 'text-[#8B5CF6]', // Lavender active
-      borderColor: 'border-[#EDE9FE]'
+      title: '🕵️‍♂️ Envio sob Custódia Silenciosa',
+      desc: 'Enviamos suas investigações literárias e thrillers para todo o Brasil de forma segura e discreta! Calcule o transporte fornecendo seu CEP. Embalagem confidencial resistente com rastreamento logístico em tempo real.',
+      icon: 'Send',
+      bgClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-950/30',
+      numColor: 'text-emerald-950/20'
     },
     {
       id: 2,
-      title: '2. Comente o que achou',
-      desc: 'Puxe conversa fiada ou profunda! Espaço livre de críticas rebuscadas e focado em opiniões sinceras e acolhedoras.',
-      icon: 'MessageSquare',
-      pastelBg: 'bg-[#D1FAE5]', // Mint pastel
-      accentColor: 'text-[#10B981]', // Mint active
-      borderColor: 'border-[#D1FAE5]'
+      title: '🔒 Prontuário Altamente Confidencial',
+      desc: 'Sua privacidade é inviolável. Nosso ambiente de checkout integra camadas certificadas de criptografia avançada. Seus dados de simulação e dados pessoais são tratados sob sigilo absoluto e protegidos.',
+      icon: 'ShieldCheck',
+      bgClass: 'bg-blue-500/10 text-blue-400 border-blue-950/30',
+      numColor: 'text-blue-950/20'
     },
     {
       id: 3,
-      title: '3. Compartilhe sua própria escrita',
-      desc: 'É autor independente ou gosta de arriscar poemas na gaveta? Aqui você ganha destaque e leitores curiosos de verdade.',
-      icon: 'Feather',
-      pastelBg: 'bg-[#FFEFD6]', // Coral/Yellow pastel
-      accentColor: 'text-[#F97316]', // Orange active
-      borderColor: 'border-[#FFEFD6]'
+      title: '📊 Relatórios & Atas Automatizadas',
+      desc: 'Exporte facilmente suas despesas! Ao fechar seu carrinho de evidências, nosso sistema compila todos os metadados de compra em linhas estruturadas prontas para visualização direta no Google Sheets.',
+      icon: 'TableProperties',
+      bgClass: 'bg-amber-500/10 text-amber-400 border-amber-950/30',
+      numColor: 'text-amber-950/20'
     }
   ];
 
   return (
-    <section id="features" className="py-16 px-4 max-w-6xl mx-auto">
-      <div className="text-center max-w-2xl mx-auto mb-12">
-        <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#8B5CF6] bg-[#EDE9FE] px-4 py-2 rounded-full inline-block">
-          Como Funciona
+    <section id="features" className="py-12 sm:py-16 max-w-6xl mx-auto px-4 relative z-10">
+      
+      {/* Whimsical Header */}
+      <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
+        <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-red-500 bg-red-950/30 px-3.5 py-1.5 rounded-full inline-block border border-red-900/20">
+          🕵️‍♂️ Protocolos Operacionais 🕵️‍♂️
         </span>
-        <h2 className="text-3xl font-display font-extrabold text-[#111827] mt-4 tracking-tight leading-tight sm:text-4xl">
-          Um espaço sutil para inspirar leituras reais
+        <h2 className="text-2xl sm:text-3xl font-serif font-extrabold text-[#F1F5F9] mt-4 tracking-tight leading-tight">
+          Investigação, Sigilo & Logística
         </h2>
-        <p className="text-sm text-[#4B5563] mt-3 font-sans leading-relaxed">
-          Sem rankings de velocidade ou metas sufocantes. Apenas a alegria simples de recomendar e descobrir leituras memoráveis de forma descontraída.
+        <p className="text-xs sm:text-sm text-slate-400 mt-2 font-sans max-w-md mx-auto">
+          Tratamos cada livro como uma evidência valiosa: embalagens reforçadas opacas e seguras que garantem que suas leituras psicológicas cheguem perfeitamente lacradas ao seu destino.
         </p>
       </div>
 
+      {/* Grid displays */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {items.map((item) => (
           <div 
             key={item.id}
-            className="interactive-card bg-white p-8 flex flex-col items-start gap-4 transition-all duration-300 relative overflow-hidden"
+            className="book-card-magic bg-[#12131A] border border-[#2D303D] p-7 sm:p-8 flex flex-col items-start gap-4 transition-all duration-300 relative overflow-hidden"
           >
-            {/* Background icon container visually balanced */}
-            <div className={`w-14 h-14 rounded-2xl ${item.pastelBg} ${item.accentColor} flex items-center justify-center border border-transparent shadow-sm`}>
-              <LucideIcon name={item.icon} size={24} strokeWidth={2.5} />
+            {/* Background symbol */}
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${item.bgClass} shadow-sm z-10`}>
+              <LucideIcon name={item.icon} size={20} strokeWidth={2.5} />
             </div>
 
-            <h3 className="font-display font-extrabold text-lg text-[#111827]">
+            <h3 className="font-serif font-bold text-base sm:text-lg text-slate-100 z-10">
               {item.title}
             </h3>
             
-            <p className="text-sm text-[#4B5563] leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed z-10 font-sans">
               {item.desc}
             </p>
 
-            {/* Subtle giant back numbered indicator */}
-            <span className="absolute bottom-[-15px] right-[-10px] text-[110px] font-sans font-black select-none pointer-events-none text-slate-100/60 leading-none">
-              {item.id}
+            {/* Huge decorative behind-number label */}
+            <span className={`absolute bottom-[-15px] right-[-10px] text-[100px] font-mono font-black select-none pointer-events-none ${item.numColor} leading-none z-0`}>
+              0{item.id}
             </span>
           </div>
         ))}

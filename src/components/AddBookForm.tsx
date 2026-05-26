@@ -3,318 +3,421 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Book } from '../types';
 import { COVER_GRADIENTS, COVER_ICONS } from '../data';
 import LucideIcon from './LucideIcon';
 
 interface AddBookFormProps {
   onAddBook: (newBook: Book) => void;
+  onEditBook?: Book | null; // If passed, we are in edit mode
+  onSaveEditedBook?: (updatedBook: Book) => void;
   onClose: () => void;
 }
 
-export default function AddBookForm({ onAddBook, onClose }: AddBookFormProps) {
+export default function AddBookForm({ onAddBook, onEditBook, onSaveEditedBook, onClose }: AddBookFormProps) {
+  const isEditing = !!onEditBook;
+  
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [category, setCategory] = useState<'Indicação' | 'Leitura Atual' | 'Obra Autoral'>('Indicação');
-  const [curatorName, setCuratorName] = useState('');
-  const [curatorRole, setCuratorRole] = useState('');
-  const [comment, setComment] = useState('');
-  const [stars, setStars] = useState(5);
+  const [price, setPrice] = useState<number>(29.90);
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<'Thriller Psicológico' | 'Dark Romance' | 'Suspense Policial' | 'Terror Mentis'>('Thriller Psicológico');
+  const [discount, setDiscount] = useState<number>(0);
   
-  // Cover custom choices
+  // Cover styling options
   const [gradIndex, setGradIndex] = useState(0);
-  const [isAuthored, setIsAuthored] = useState(false);
-  const [iconChoice, setIconChoice] = useState('BookOpen');
+  const [iconChoice, setIconChoice] = useState('Brain');
+  const [coverImage, setCoverImage] = useState<string>(''); // Base64 image
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize fields if we are in Edit Mode
+  useEffect(() => {
+    if (onEditBook) {
+      setTitle(onEditBook.title);
+      setAuthor(onEditBook.author);
+      setPrice(onEditBook.price);
+      setDescription(onEditBook.description);
+      setCategory(onEditBook.category);
+      setDiscount(onEditBook.discount || 0);
+      setCoverImage(onEditBook.coverImage || '');
+      
+      // Match gradient if possible
+      const matchGrad = COVER_GRADIENTS.findIndex(
+        (g) => g.start === onEditBook.coverStyle.gradientStart
+      );
+      if (matchGrad !== -1) setGradIndex(matchGrad);
+      
+      setIconChoice(onEditBook.coverStyle.iconName || 'Brain');
+    }
+  }, [onEditBook]);
 
   const selectedGradient = COVER_GRADIENTS[gradIndex];
 
-  // Auto detect if the user selected category "Obra Autoral" to toggle isAuthored
-  React.useEffect(() => {
-    if (category === 'Obra Autoral') {
-      setIsAuthored(true);
-    } else {
-      setIsAuthored(false);
+  // Base64 file reader
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      const file = files[0];
+      if (file.size > 1.5 * 1024 * 1024) {
+        alert('Por favor, selecione uma imagem menor que 1.5MB para que caiba no banco de dados local!');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setCoverImage(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     }
-  }, [category]);
+  };
+
+  const clearUploadedImage = () => {
+    setCoverImage('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !author.trim() || !curatorName.trim() || !comment.trim()) {
-      alert('Por favor, preencha todos os campos obrigatórios!');
+    if (!title.trim() || !author.trim() || !description.trim()) {
+      alert('Por favor, preencha todos os campos obrigatórios da obra!');
       return;
     }
 
-    const newBook: Book = {
-      id: String(Date.now()),
-      title: title.trim(),
-      author: author.trim(),
-      isAuthored: category === 'Obra Autoral',
-      category,
-      curatorName: curatorName.trim(),
-      curatorRole: curatorRole.trim() || undefined,
-      comment: comment.trim(),
-      likes: 1, // Start with 1 like for motivation!
-      stars,
-      coverStyle: {
-        gradientStart: selectedGradient.start,
-        gradientEnd: selectedGradient.end,
-        iconName: iconChoice,
-        textColor: selectedGradient.start === '#F3C430' ? '#111827' : '#FFFFFF'
-      },
-      commentsList: [],
-      createdAt: new Date().toISOString()
+    if (price <= 0) {
+      alert('Toda obra tem seu valor! Insira um valor maior que R$ 0,00.');
+      return;
+    }
+
+    const bookStyle = {
+      gradientStart: selectedGradient.start,
+      gradientEnd: selectedGradient.end,
+      iconName: iconChoice,
+      textColor: '#FFFFFF'
     };
 
-    onAddBook(newBook);
+    if (isEditing && onEditBook && onSaveEditedBook) {
+      const updatedBook: Book = {
+        ...onEditBook,
+        title: title.trim(),
+        author: author.trim(),
+        price: Number(price),
+        description: description.trim(),
+        category,
+        discount: discount > 0 ? Number(discount) : undefined,
+        coverImage: coverImage || undefined,
+        coverStyle: bookStyle,
+      };
+      onSaveEditedBook(updatedBook);
+    } else {
+      const newBook: Book = {
+        id: String(Date.now()),
+        title: title.trim(),
+        author: author.trim(),
+        price: Number(price),
+        description: description.trim(),
+        isAuthored: true, // Novos livros cadastrados são assumidos como autorais do proprietário
+        category,
+        discount: discount > 0 ? Number(discount) : undefined,
+        coverImage: coverImage || undefined,
+        coverStyle: bookStyle,
+        likes: 0,
+        stars: 5,
+        commentsList: [],
+        createdAt: new Date().toISOString()
+      };
+      onAddBook(newBook);
+    }
   };
 
   return (
-    <div className="bg-white border border-[#F3F4F6] rounded-[32px] p-6 sm:p-8 shadow-xl relative">
+    <div className="parchment-sheet p-6 sm:p-8 relative">
       {/* Decorative close button */}
       <button 
         onClick={onClose}
-        className="absolute top-4 right-4 text-slate-400 hover:text-[#111827] bg-[#FDFCFB] border border-[#E5E7EB] p-2.5 rounded-full cursor-pointer transition-transform duration-200 active:scale-90"
-        title="Fechar formulário"
+        className="absolute top-4 right-4 text-slate-400 hover:text-white bg-[#12131A] border border-zinc-800 p-2.5 rounded-full cursor-pointer transition-transform duration-200 active:scale-90 z-20"
+        title="Fechar Painel"
       >
         <LucideIcon name="X" size={16} />
       </button>
 
       <div className="mb-6 pr-6">
-        <h3 className="text-xl sm:text-2xl font-display font-extrabold text-[#111827] tracking-tight">
-          📚 Compartilhar uma Leitura ou Escrita
+        <h3 className="text-xl sm:text-2xl font-serif font-extrabold text-slate-100 tracking-tight flex items-center gap-2">
+          <span>{isEditing ? '🔍 Atualizar Dossiê Criminal' : '🕵️‍♂️ Catalogar Novo Dossiê / Suspense'}</span>
         </h3>
-        <p className="text-xs sm:text-sm text-[#4B5563] mt-1.5 font-sans">
-          Mostre para a comunidade o que tem feito seus olhos brilharem. Publique de forma minimalista!
+        <p className="text-xs sm:text-sm text-slate-300 mt-1">
+          {isEditing 
+            ? 'Altere os metadados, preço e sinopse do livro de suspense/romance. Os dados serão atualizados no dossiê.' 
+            : 'Preencha as informações literárias para arquivar e exibir uma nova obra autoral em nossa vitrine investigativa.'}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
         
         {/* Left Column: Cover Live Preview */}
-        <div className="lg:col-span-4 flex flex-col items-center bg-[#FDFCFB] p-6 rounded-2xl border border-dashed border-[#E5E7EB]">
-          <span className="text-[10px] uppercase font-mono tracking-wider text-[#4B5563] mb-3">
-            Prévia da Capa
+        <div className="lg:col-span-4 flex flex-col items-center bg-[#12131A] p-5 rounded-xl border border-zinc-800">
+          <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 mb-3 font-semibold">
+            ✦ Dossiê Visual (Capa) ✦
           </span>
 
           <div 
-            className="book-cover-wrap w-[140px] h-[200px] flex flex-col justify-between p-4 text-left relative overflow-hidden"
+            className="book-card-magic w-[140px] h-[210px] flex flex-col justify-between p-4 text-left relative overflow-hidden"
             style={{
-              background: `linear-gradient(135deg, ${selectedGradient.start}, ${selectedGradient.end})`,
-              color: selectedGradient.start === '#F3C430' ? '#111827' : '#FFFFFF'
+              background: coverImage 
+                ? 'none' 
+                : `linear-gradient(135deg, ${selectedGradient.start}, ${selectedGradient.end})`,
+              color: '#FFFFFF'
             }}
           >
-            <div className="book-cover-spine" />
-            <div className="absolute top-2.5 right-2.5 opacity-35">
+            {coverImage && (
+              <img 
+                src={coverImage} 
+                alt="Uploaded Cover" 
+                className="absolute inset-0 w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            )}
+            
+            {/* Aesthetics book binders */}
+            <div className="book-bound-spine" />
+            <div className="book-pages-stack" />
+
+            {/* Simulated discounts tag bookmark ribbon */}
+            {discount > 0 && (
+              <div className="bookmark-ribbon text-[9px] font-black w-[30px] h-[45px] right-[8px] pt-1.5 leading-none">
+                -{discount}%
+              </div>
+            )}
+
+            <div className="absolute top-2.5 right-2.5 opacity-35 z-10">
               <LucideIcon name="Bookmark" size={20} strokeWidth={1.5} />
             </div>
 
             <div className="z-10 mt-1">
-              <span className="text-[9px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full border border-current opacity-85">
-                {category === 'Obra Autoral' ? 'Autoral' : 'Indicação'}
+              <span className="text-[8px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-black/45 border border-white/20">
+                {category}
               </span>
             </div>
 
             <div className="z-10 my-auto py-2">
-              <h4 className="font-display font-bold text-sm leading-tight tracking-tight drop-shadow-sm line-clamp-3">
+              <h4 className="font-serif font-bold text-xs sm:text-sm leading-tight tracking-tight drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] line-clamp-3">
                 {title || 'Título do Livro'}
               </h4>
-              <p className="text-[10px] mt-1.5 font-mono opacity-90 line-clamp-1">
-                por {author || 'Nome do Autor'}
+              <p className="text-[9px] mt-1 font-mono opacity-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] line-clamp-1">
+                por {author || 'Autor da Obra'}
               </p>
             </div>
 
-            <div className="z-10 flex justify-between items-center mt-1 pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}>
-              <span className="text-[9px] font-mono opacity-80">BookShare</span>
-              <LucideIcon name={iconChoice} size={14} />
+            <div className="z-10 flex justify-between items-center mt-1 pt-1 border-t border-white/20">
+              <span className="text-[8px] font-mono opacity-80 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                R$ {(price || 0).toFixed(2)}
+              </span>
+              <LucideIcon name={iconChoice} size={13} className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]" />
             </div>
           </div>
 
-          {/* Color swatch selector */}
-          <div className="w-full mt-5">
-            <label className="text-[10px] uppercase font-mono tracking-wider text-[#4B5563] block mb-2 text-center">
-              Estilo da Paleta
-            </label>
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {COVER_GRADIENTS.map((g, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setGradIndex(index)}
-                  className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer ${
-                    gradIndex === index ? 'border-[#8B5CF6] scale-120 shadow-sm' : 'border-transparent hover:scale-110'
-                  }`}
-                  style={{ background: `linear-gradient(135deg, ${g.start}, ${g.end})` }}
-                  title={g.name}
+          {/* Base64 Upload component */}
+          <div className="w-full mt-4 border-t border-zinc-800 pt-3 flex flex-col items-center">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 mb-1.5 font-semibold text-center">
+              Inserir Imagem Oficial de Capa
+            </span>
+            <div className="flex flex-col items-center gap-2 w-full">
+              <label className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 bg-red-700 hover:bg-red-600 text-white text-[11px] font-semibold font-mono rounded-lg cursor-pointer transition-all border border-zinc-800 shadow-sm">
+                <LucideIcon name="Upload" size={12} />
+                Carregar Imagem Real
+                <input 
+                  type="file" 
+                  ref={fileInputRef}
+                  accept="image/*" 
+                  onChange={handleImageFileChange} 
+                  className="hidden" 
                 />
-              ))}
+              </label>
+              
+              {coverImage && (
+                <button
+                  type="button"
+                  onClick={clearUploadedImage}
+                  className="text-[9px] font-bold text-red-400 hover:underline"
+                >
+                  Remover Imagem & Usar Capa Padrão
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Decorative Icon Selector */}
-          <div className="w-full mt-4 border-t border-[#F3F4F6] pt-3">
-            <label className="text-[10px] uppercase font-mono tracking-wider text-[#4B5563] block mb-2 text-center">
-              Ícone de Destaque
-            </label>
-            <div className="flex flex-wrap justify-center gap-2">
-              {COVER_ICONS.map((ic) => (
-                <button
-                  key={ic}
-                  type="button"
-                  onClick={() => setIconChoice(ic)}
-                  className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
-                    iconChoice === ic 
-                      ? 'border-[#8B5CF6] bg-[#EDE9FE] text-[#8B5CF6]' 
-                      : 'border-[#E5E7EB] bg-white text-slate-400 hover:text-[#111827]'
-                  }`}
-                  title={ic}
-                >
-                  <LucideIcon name={ic} size={14} />
-                </button>
-              ))}
-            </div>
-          </div>
+          {!coverImage && (
+            <>
+              {/* Color swatch selector */}
+              <div className="w-full mt-4 border-t border-zinc-800 pt-3">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block mb-1.5 text-center font-semibold">
+                  Cor de Capa Padrão
+                </label>
+                <div className="flex flex-wrap justify-center gap-1">
+                  {COVER_GRADIENTS.map((g, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setGradIndex(index)}
+                      className={`w-5.5 h-5.5 rounded-full border transition-transform cursor-pointer ${
+                        gradIndex === index ? 'border-red-500 scale-120 ring-1 ring-red-500' : 'border-transparent hover:scale-110'
+                      }`}
+                      style={{ background: `linear-gradient(135deg, ${g.start}, ${g.end})` }}
+                      title={g.name}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Decorative Icon Selector */}
+              <div className="w-full mt-3 border-t border-zinc-800 pt-2.5">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block mb-1.5 text-center font-semibold">
+                  Ícone Temático de Capa
+                </label>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {COVER_ICONS.map((ic) => (
+                    <button
+                      key={ic}
+                      type="button"
+                      onClick={() => setIconChoice(ic)}
+                      className={`p-1 rounded-md border transition-all cursor-pointer ${
+                        iconChoice === ic 
+                          ? 'border-red-650 bg-red-900 text-white shadow-inner' 
+                          : 'border-zinc-850 bg-[#1C1E26] text-slate-400 hover:text-white hover:bg-zinc-800'
+                      }`}
+                      title={ic}
+                    >
+                      <LucideIcon name={ic} size={12} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
         </div>
 
         {/* Right Column: Information form fields */}
-        <form onSubmit={handleSubmit} className="lg:col-span-8 flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="lg:col-span-8 flex flex-col gap-4">
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#111827] mb-1.5 uppercase tracking-wider">
-                Título do Livro <span className="text-[#F97316]">*</span>
+              <label className="block text-[11px] font-bold text-slate-100 mb-1 uppercase tracking-wider">
+                Título da Obra <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="Ex: O Menino que Desenhava Mundos"
+                placeholder="Ex: Noites de Psicose"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-white border border-[#E5E7EB] rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-slate-100"
                 maxLength={45}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#111827] mb-1.5 uppercase tracking-wider">
-                Autor(a) da Obra <span className="text-[#F97316]">*</span>
+              <label className="block text-[11px] font-bold text-slate-100 mb-1 uppercase tracking-wider">
+                Autor / Pseudônimo <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="Ex: Júlio Verne, Clarice Lispector"
+                placeholder="Ex: Evelyn Cross"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                className="w-full bg-white border border-[#E5E7EB] rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-slate-100"
                 maxLength={40}
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#111827] mb-1.5 uppercase tracking-wider">
-                Tipo de Recomendação <span className="text-[#F97316]">*</span>
+              <label className="block text-[11px] font-bold text-slate-100 mb-1 uppercase tracking-wider">
+                Gênero Literário <span className="text-red-500">*</span>
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as any)}
-                className="w-full bg-white border border-[#E5E7EB] rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all font-sans"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-slate-100 font-serif"
               >
-                <option value="Indicação">📌 Indicação de Favorito</option>
-                <option value="Leitura Atual">📖 Lendo Atualmente</option>
-                <option value="Obra Autoral">✨ Minha Obra Autoral</option>
+                <option value="Thriller Psicológico">🧠 Thriller Psicológico</option>
+                <option value="Dark Romance">🌹 Dark Romance</option>
+                <option value="Suspense Policial">🕵️‍♂️ Suspense Policial</option>
+                <option value="Terror Mentis">👁️ Terror Mentis</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#111827] mb-1.5 uppercase tracking-wider">
-                Sua Avaliação Sincera
-              </label>
-              <div className="flex items-center gap-1.5 h-[44px]">
-                {[...Array(5)].map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setStars(i + 1)}
-                    className="cursor-pointer transition-transform duration-150 hover:scale-120"
-                  >
-                    <LucideIcon
-                      name="Star"
-                      size={24}
-                      className={i < stars ? "text-amber-400 fill-amber-400" : "text-gray-200"}
-                    />
-                  </button>
-                ))}
-                <span className="text-xs font-mono text-slate-400 ml-2">
-                  ({stars} / 5)
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-[#111827] mb-1.5 uppercase tracking-wider">
-                Seu Nome ou Apelido <span className="text-[#F97316]">*</span>
+              <label className="block text-[11px] font-bold text-slate-100 mb-1 uppercase tracking-wider">
+                Preço Sugerido (R$) <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                placeholder="Ex: Beatriz Santos"
-                value={curatorName}
-                onChange={(e) => setCuratorName(e.target.value)}
-                className="w-full bg-white border border-[#E5E7EB] rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all"
-                maxLength={25}
+                type="number"
+                step="0.01"
+                min="0.05"
+                placeholder="29.90"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-slate-100 font-mono"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#111827] mb-1.5 uppercase tracking-wider">
-                Sua Mini Biografia / "Tag"
+              <label className="block text-[11px] font-bold text-slate-100 mb-1 uppercase tracking-wider">
+                Desconto do Dossiê (%)
               </label>
               <input
-                type="text"
-                placeholder="Ex: Amante de Biografias, Escritor Amador"
-                value={curatorRole}
-                onChange={(e) => setCuratorRole(e.target.value)}
-                className="w-full bg-white border border-[#E5E7EB] rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all"
-                maxLength={45}
+                type="number"
+                min="0"
+                max="90"
+                placeholder="Ex: 15"
+                value={discount || ''}
+                onChange={(e) => setDiscount(Math.min(90, Math.max(0, Number(e.target.value))))}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-slate-100 font-mono"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#111827] mb-1.5 uppercase tracking-wider">
-              Seu Breve Balão de Comentário <span className="text-[#F97316]">*</span>
+            <label className="block text-[11px] font-bold text-slate-100 mb-1 uppercase tracking-wider font-sans">
+              Sinopse do Enredo & Ganchos Finais <span className="text-red-500">*</span>
             </label>
             <textarea
-              placeholder="Ex: Este livro tem mudado minha forma de ver o mundo, a escrita foca em passagens divertidas e me emocionei no final!"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="w-full bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all h-24 resize-none"
-              maxLength={220}
+              placeholder="Escreva a sinopse oficial da obra. Insira os ganchos mentais e detalhes psicológicos que convencerão os leitores de forma instigante."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all h-28 resize-none text-slate-100"
+              maxLength={280}
               required
             />
-            <div className="text-[10px] text-right font-mono text-slate-400 mt-1">
-              {comment.length} / 220 caracteres
+            <div className="text-[10px] text-right font-mono text-slate-500 mt-1 font-semibold">
+              {description.length} / 280 caracteres
             </div>
           </div>
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-3 mt-2">
+          <div className="flex items-center justify-end gap-3 mt-1 pt-2 border-t border-zinc-800">
             <button
               type="button"
               onClick={onClose}
-              className="fun-button-secondary font-bold uppercase tracking-wider text-xs px-5 py-2.5"
+              className="button-magic-secondary font-bold text-xs uppercase"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-[#8B5CF6] text-white font-bold text-xs uppercase tracking-wider rounded-full hover:bg-[#7C3AED] transition-all duration-200 cursor-pointer shadow-lg shadow-purple-100 flex items-center gap-1.5"
+              className="button-magic-primary flex items-center gap-1.5"
             >
-              Publicar no Feed 🚀
+              <span>{isEditing ? 'Salvar Alterações' : 'Arquivar no Dossiê Store 🕵️‍♂️'}</span>
+              <LucideIcon name="Shield" size={14} />
             </button>
           </div>
 
