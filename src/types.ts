@@ -37,6 +37,33 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface Order {
+  id: string;
+  date: string;
+  customerName: string;
+  customerEmail: string;
+  cep: string;
+  items: {
+    bookId: string;
+    title: string;
+    quantity: number;
+    price: number;
+  }[];
+  shippingCost: number;
+  total: number;
+  metodoEnvio: string;
+  status: string; // 'Avaliando Evidências' | 'Preparando Lacre Kraft' | 'Despachado em Sigilo' | 'Entregue'
+}
+
+export interface FAQQuestion {
+  id: string;
+  userName: string;
+  question: string;
+  date: string;
+  replied: boolean;
+  replyText?: string;
+}
+
 export interface GoogleSheetsRowFormat {
   dataHora: string;
   idPedido: string;

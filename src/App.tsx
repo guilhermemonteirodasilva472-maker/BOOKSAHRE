@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Book, Comment, CartItem, GoogleSheetsRowFormat } from './types';
+import { Book, Comment, CartItem, Order, FAQQuestion, GoogleSheetsRowFormat } from './types';
 import { INITIAL_BOOKS } from './data';
 import BookCard from './components/BookCard';
 import AddBookForm from './components/AddBookForm';
@@ -32,16 +32,72 @@ export default function App() {
     }
   });
 
-  // UI / Drawer States
+  // UI / Navigation & view router
+  const [currentView, setCurrentView] = useState<'home' | 'catalog' | 'tracking' | 'faq' | 'book-detail'>('home');
+  const [selectedBookForPage, setSelectedBookForPage] = useState<Book | null>(null);
+
+  // Authentication State
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: 'admin' | 'user' } | null>(() => {
+    try {
+      const saved = localStorage.getItem('forense_bookstore_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  // Simulated Orders list for tracker
+  const [orders, setOrders] = useState<Order[]>(() => {
+    try {
+      const saved = localStorage.getItem('forense_bookstore_orders');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // FAQ entries with dynamic local reactivity
+  const [faqQuestions, setFaqQuestions] = useState<FAQQuestion[]>(() => {
+    try {
+      const saved = localStorage.getItem('forense_bookstore_faq');
+      if (saved) return JSON.parse(saved);
+      
+      const defaultFAQ: FAQQuestion[] = [
+        {
+          id: '1',
+          userName: 'Investigadora Beatriz',
+          question: 'Como as obras do acervo Dossiê Psique são seladas confidencialmente?',
+          date: '25/05/2026',
+          replied: true,
+          replyText: 'Cada exemplar é acondicionado sob sigilo absoluto em envelope Kraft rígido anti-impacto, lacrado com fita fosca e carimbo de cera, sem elementos externos que exponham seu teor investigativo ou de crime.'
+        },
+        {
+          id: '2',
+          userName: 'Perita Criminal Clarice',
+          question: 'O faturamento integrado realmente gera simulação para Google Sheets?',
+          date: '24/05/2026',
+          replied: true,
+          replyText: 'Sim! Toda compra concluída dispara a estruturação de metadados em formato de colunas prontas do Google Sheets, visíveis tanto no resumo final do pedido quanto na aba de Rastreamento.'
+        }
+      ];
+      return defaultFAQ;
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // UI / Filter States
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [isAdminMode, setIsAdminMode] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
   
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+
+  // Computed admin mode status based on logged-in session role
+  const isAdminMode = currentUser?.role === 'admin';
 
   // Checkout Form States
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'shipping' | 'success'>('cart');
@@ -76,7 +132,7 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Sync states to LocalStorage
+  // Sync state variables to LocalStorage
   useEffect(() => {
     try {
       localStorage.setItem('forense_bookstore_books', JSON.stringify(books));
@@ -92,6 +148,28 @@ export default function App() {
       console.warn('Erro ao salvar o carrinho no localStorage', error);
     }
   }, [cart]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('forense_bookstore_orders', JSON.stringify(orders));
+    } catch (e) {}
+  }, [orders]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('forense_bookstore_faq', JSON.stringify(faqQuestions));
+    } catch (e) {}
+  }, [faqQuestions]);
+
+  useEffect(() => {
+    try {
+      if (currentUser) {
+        localStorage.setItem('forense_bookstore_user', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('forense_bookstore_user');
+      }
+    } catch (e) {}
+  }, [currentUser]);
 
   // Toast utilities
   const triggerNotification = (message: string) => {
@@ -162,7 +240,9 @@ export default function App() {
 
   // Prepopulate book details from cover image upload scanner
   const handleOpenPrepopulatedBook = (initialData: Partial<Book>) => {
-    setIsAdminMode(true);
+    if (!currentUser || currentUser.role !== 'admin') {
+      setCurrentUser({ name: 'Comandante Forense', role: 'admin' });
+    }
     setIsFormOpen(true);
     setEditingBook({
       id: 'temp-magic-prefill-' + Date.now(),
@@ -410,7 +490,27 @@ export default function App() {
 
     // Simulated API execution dispatcher
     console.log("📊 [GOOGLE SHEETS GATEWAY API] ENTRADA DE FILA ADICIONADA:", sheetsDataPayload);
-    
+
+    // Save actual Order details into simulated database for tracking
+    const newOrder: Order = {
+      id: orderId,
+      date: dateStr,
+      customerName: customerName.trim(),
+      customerEmail: customerEmail.trim(),
+      cep: shippingCEP,
+      items: cart.map(item => ({
+        bookId: item.book.id,
+        title: item.book.title,
+        quantity: item.quantity,
+        price: item.book.discount ? item.book.price * (1 - item.book.discount / 100) : item.book.price
+      })),
+      shippingCost: activeShippingCost,
+      total: cartTotal,
+      metodoEnvio: shippingType === 'vassoura' ? 'Custódia Expressa Aérea' : 'Custódia Padrão Segura',
+      status: 'Avaliando Evidências'
+    };
+
+    setOrders(prev => [newOrder, ...prev]);
     setCompletedOrder(sheetsDataPayload);
     setCheckoutStep('success');
   };
@@ -715,7 +815,7 @@ export default function App() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           
           {/* Charming Logo Brand */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setCurrentView('home'); setSelectedBookForPage(null); }}>
             <div className="w-9 h-9 rounded-xl bg-red-900 text-white flex items-center justify-center font-serif font-black shadow-md border border-red-950">
               Ψ
             </div>
@@ -730,30 +830,31 @@ export default function App() {
           </div>
 
           {/* Quick Nav Links */}
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="#how" className="text-xs font-bold uppercase tracking-wider text-amber-900/75 hover:text-amber-950 transition-colors">
-              Garantias
-            </a>
-            <a href="#bookshelf-grid" className="text-xs font-bold uppercase tracking-wider text-amber-900/75 hover:text-amber-950 transition-colors">
-              Catálogo Vivo
-            </a>
+          <nav className="hidden md:flex items-center gap-6">
             <button 
-              onClick={() => {
-                setIsAdminMode(!isAdminMode);
-                triggerNotification(
-                  !isAdminMode 
-? '🕵️‍♂️ Modo Investigação Admin Ativado! Edite e ordene as evidências literárias.' 
-: 'Modo Leitura restaurado. Obrigado!'
-                );
-              }}
-              className={`text-xs font-bold uppercase tracking-wider cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all ${
-                isAdminMode 
-                  ? 'bg-amber-950 text-amber-50 border-amber-950' 
-                  : 'bg-transparent text-amber-900 border-amber-900/20 hover:bg-amber-50'
-              }`}
+              onClick={() => { setCurrentView('home'); setSelectedBookForPage(null); }}
+              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'home' ? 'text-red-500 border-b-2 border-red-500 pb-1' : 'text-slate-400 hover:text-white pb-1'}`}
             >
-              <LucideIcon name="ShieldAlert" size={13} />
-              <span>{isAdminMode ? 'Admin Ativo' : 'Painel Admin'}</span>
+              Início
+            </button>
+            <button 
+              onClick={() => { setCurrentView('catalog'); setSelectedBookForPage(null); }}
+              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'catalog' ? 'text-red-500 border-b-2 border-red-500 pb-1' : 'text-slate-400 hover:text-white pb-1'}`}
+            >
+              Catálogo Exclusivo
+            </button>
+            <button 
+              onClick={() => { setCurrentView('faq'); setSelectedBookForPage(null); }}
+              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'faq' ? 'text-red-500 border-b-2 border-red-500 pb-1' : 'text-slate-400 hover:text-white pb-1'}`}
+            >
+              FAQ / Dúvidas
+            </button>
+            <button 
+              onClick={() => { setCurrentView('tracking'); setSelectedBookForPage(null); }}
+              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono flex items-center gap-1.5 ${currentView === 'tracking' ? 'text-red-500 border-b-2 border-red-500 pb-1' : 'text-slate-400 hover:text-white pb-1'}`}
+            >
+              <LucideIcon name="User" size={13} />
+              <span>{currentUser ? (currentUser.role === 'admin' ? '👤 Admin' : `👤 ${currentUser.name}`) : 'Entrar / Rastrear'}</span>
             </button>
           </nav>
 
@@ -763,33 +864,30 @@ export default function App() {
             {/* Toggle switch for Admin in small mobile resolutions */}
             <button
               onClick={() => {
-                setIsAdminMode(!isAdminMode);
-                triggerNotification(
-                  !isAdminMode 
-                    ? '🔮 Admin Ativado localmente!' 
-                    : 'Modo Compras Ativo!'
-                );
+                setCurrentView('tracking');
+                setSelectedBookForPage(null);
+                triggerNotification('Acesse o Painel para Logon.');
               }}
-              className="md:hidden p-2 rounded-xl text-amber-950 hover:bg-amber-100"
-              title="Acesso Admin"
+              className="md:hidden p-2 rounded-xl text-slate-300 hover:bg-zinc-800"
+              title="Acesso de Conta / Login"
             >
-              <LucideIcon name="Settings" size={18} />
+              <LucideIcon name="User" size={18} />
             </button>
 
             {/* Shopping Cart Trigger */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2 rounded-xl bg-amber-150 hover:bg-amber-100 border border-amber-900/10 transition-colors cursor-pointer flex items-center gap-2 px-3 py-2"
+              className="relative p-2 rounded-xl bg-red-950/25 hover:bg-red-950/40 border border-[#2D303D] transition-colors cursor-pointer flex items-center gap-2 px-3 py-2"
               title="Abrir sacola de compras"
             >
-              <LucideIcon name="ShoppingBag" className="text-amber-950" size={18} />
+              <LucideIcon name="ShoppingBag" className="text-red-400" size={18} />
               <div className="text-left leading-none">
-                <span className="text-[9px] font-mono text-amber-800/80 block select-none uppercase font-bold">Carrinho</span>
-                <span className="text-xs font-serif font-bold text-amber-950">R$ {cartSubtotal.toFixed(2)}</span>
+                <span className="text-[9px] font-mono text-slate-400 block select-none uppercase font-bold">Dossiê</span>
+                <span className="text-xs font-serif font-bold text-slate-200">R$ {cartSubtotal.toFixed(2)}</span>
               </div>
 
               {totalCartItems > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-[#D15525] text-white min-w-5 h-5 rounded-full text-[10px] font-mono flex items-center justify-center font-bold px-1 animate-pulse border border-white">
+                <span className="absolute -top-1.5 -right-1.5 bg-[#EF4444] text-white min-w-5 h-5 rounded-full text-[10px] font-mono flex items-center justify-center font-bold px-1 animate-pulse border border-zinc-950">
                   {totalCartItems}
                 </span>
               )}
@@ -802,287 +900,1007 @@ export default function App() {
       {/* Body Core container */}
       <main className="flex-grow">
         
-        {/* Whimsical Hero Section */}
-        <section className="relative py-16 sm:py-24 px-4 max-w-6xl mx-auto overflow-hidden text-center lg:text-left">
-          
-          <div className="absolute top-[5%] right-[2%] text-amber-900/10 pointer-events-none">
-            <svg className="w-16 h-16 animate-magical-sparkle" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2l2.4 5.6L20 10l-5.6 2.4L12 18l-2.4-5.6L4 10l5.6-2.4z"/>
-            </svg>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left Content Column */}
-            <div className="lg:col-span-7 space-y-6">
-              
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/30 text-red-400 text-xs font-bold uppercase tracking-wider border border-red-900/20">
-                <span>🕵️‍♂️</span>
-                <span>Dossiês de Romance Psicológico & Suspense</span>
-                <span>🕵️‍♂️</span>
-              </div>
-
-              <h2 className="text-4xl sm:text-6xl font-serif font-black text-slate-100 tracking-tight leading-[1.08]">
-                Entre na mente de personagens e <span className="text-red-500 block sm:inline font-serif italic font-normal">desvende segredos ocultos.</span>
-              </h2>
-
-              <p className="text-slate-300 text-sm sm:text-lg max-w-xl leading-relaxed font-sans mx-auto lg:mx-0">
-                Explore nosso acervo curado sob medida com thrillers envolventes, suspense forense e dark romances obsessionais. Adicione faturas estruturadas diretamente para download integrado e exportação ao Google Sheets!
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <a
-                  href="#bookshelf-grid"
-                  className="button-magic-primary px-8 py-4 text-xs font-semibold sm:text-sm tracking-wider shadow-lg bg-red-800 hover:bg-red-700 hover:border-red-600 text-white rounded-lg"
+        {/* Dynamic Floating detail card if activated from ThreeDLaunchBook */}
+        {selectedDetailBook && (
+          <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+            <div className="bg-[#12131A] border-2 border-[#EF4444]/40 max-w-xl w-full p-6 rounded-2xl relative shadow-2xl text-left">
+              <button 
+                onClick={() => setSelectedDetailBook(null)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              >
+                <LucideIcon name="X" size={20} />
+              </button>
+              <div className="flex flex-col sm:flex-row gap-5">
+                <div 
+                  className="w-32 h-44 shrink-0 mx-auto sm:mx-0 relative rounded-lg overflow-hidden border border-zinc-800 shadow cursor-pointer"
+                  onClick={() => {
+                    setSelectedBookForPage(selectedDetailBook);
+                    setCurrentView('book-detail');
+                    setSelectedDetailBook(null);
+                  }}
+                  style={{
+                    background: selectedDetailBook.coverImage 
+                      ? 'none' 
+                      : `linear-gradient(135deg, ${selectedDetailBook.coverStyle.gradientStart}, ${selectedDetailBook.coverStyle.gradientEnd})`
+                  }}
                 >
-                  <span>Investigar Catálogo 🔍</span>
-                </a>
-                
-                <a
-                  href="#how"
-                  className="button-magic-secondary px-8 py-4 text-xs font-semibold sm:text-sm border border-zinc-700 bg-zinc-900/55 hover:bg-zinc-800 hover:text-white text-slate-300 rounded-lg"
-                >
-                  <span>Protocolos Forenses</span>
-                </a>
-              </div>
-
-              {/* Quick Stats Banner of Bookstore */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-[#12131A] border border-[#2D303D] rounded-[28px] shadow-sm relative z-10">
-                <div className="border-[#2D303D] border-r last:border-r-0 py-1">
-                  <span className="text-xl sm:text-2xl font-serif font-black text-slate-100">{books.length}</span>
-                  <span className="block text-[9px] font-mono uppercase tracking-wider text-slate-400 mt-0.5 font-bold">Casos</span>
+                  {selectedDetailBook.coverImage && (
+                    <img 
+                      src={selectedDetailBook.coverImage} 
+                      alt={selectedDetailBook.title} 
+                      className="absolute inset-0 w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-black/30" />
                 </div>
-                <div className="border-[#2D303D] border-r last:border-r-0 py-1">
-                  <span className="text-xl sm:text-2xl font-serif font-black text-emerald-500">100%</span>
-                  <span className="block text-[9px] font-mono uppercase tracking-wider text-slate-400 mt-0.5 font-bold">Sigiloso</span>
-                </div>
-                <div className="border-[#2D303D] border-r last:border-r-0 py-1">
-                  <span className="text-xl sm:text-2xl font-serif font-black text-[#D15525]">850+</span>
-                  <span className="block text-[9px] font-mono uppercase tracking-wider text-slate-400 mt-0.5 font-bold">Depoimentos</span>
-                </div>
-                <div className="py-1">
-                  <span className="text-xl sm:text-2xl font-serif font-black text-purple-800">sheets</span>
-                  <span className="block text-[9px] font-mono uppercase tracking-wider text-amber-900/60 mt-0.5 font-bold">Exportador</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Right Column: 3D interactive launching book side-attached */}
-            <div id="launch-book-container" className="lg:col-span-5 w-full flex justify-center">
-              <ThreeDLaunchBook 
-                onAddToCart={handleAddToCart} 
-                onOpenBookDetails={(book) => setSelectedDetailBook(book)} 
-              />
-            </div>
-
-          </div>
-
-          {/* Divider Book Spine */}
-          <div className="mt-14 w-32 h-1.5 bg-gradient-to-r from-transparent via-amber-800/25 to-transparent mx-auto rounded-full" />
-
-        </section>
-
-        {/* Section Divider - SVG of turning book pages */}
-        <div className="turning-page-divider" />
-
-        {/* Dynamic Admin Dashboard area when active */}
-        {isAdminMode && (
-          <section className="py-8 bg-[#FAF4E0] border-b border-amber-900/10">
-            <div className="max-w-4xl mx-auto px-4">
-              
-              <div className="bg-amber-950 text-amber-50 p-6 rounded-2xl border border-amber-900/20 shadow-md mb-6 relative overflow-hidden">
-                
-                {/* Decoration background symbols */}
-                <div className="absolute right-6 top-6 opacity-10">
-                  <LucideIcon name="Settings" size={80} />
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-10 relative">
+                <div className="text-left flex-grow flex flex-col justify-between">
                   <div>
-                    <span className="text-[10px] font-mono uppercase font-bold tracking-widest text-[#C09228]">🔑 Painel de Controle Administrativo</span>
-                    <h3 className="text-lg font-serif font-bold text-white mt-1">Bem-vindo, Mestre Arquiteto Literário!</h3>
-                    <p className="text-xs text-amber-150/70 mt-1">Gerencie seu acervo autoral mágico em tempo real. Crie novos títulos, altere fórmulas de faturamento de ouro ou desintegre edições.</p>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
+                    <span className="text-[9px] font-mono uppercase bg-red-950/40 text-red-400 px-2 py-0.5 rounded border border-red-900/20">{selectedDetailBook.category}</span>
+                    <h4 
+                      className="font-serif font-bold text-lg text-slate-100 mt-2 leading-tight hover:text-red-400 cursor-pointer"
                       onClick={() => {
-                        setEditingBook(null); // Clear editing to ensure "Add" behavior
-                        setIsFormOpen(!isFormOpen);
+                        setSelectedBookForPage(selectedDetailBook);
+                        setCurrentView('book-detail');
+                        setSelectedDetailBook(null);
                       }}
-                      className="px-4 py-2 rounded-xl bg-amber-100 text-amber-950 hover:bg-amber-200 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
                     >
-                      <LucideIcon name={isFormOpen && !editingBook ? "BookX" : "Sparkles"} size={14} />
-                      <span>{isFormOpen && !editingBook ? 'Fechar Conjuração' : 'Conjurar Novo'}</span>
-                    </button>
-
-                    <button
-                      onClick={handleResetCatalog}
-                      className="px-4 py-2 rounded-xl bg-red-950/50 hover:bg-red-900/60 text-red-200 border border-red-900/40 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5"
+                      {selectedDetailBook.title}
+                    </h4>
+                    <p className="text-xs text-red-400 font-mono mt-0.5">por {selectedDetailBook.author}</p>
+                    <p className="text-xs text-slate-300 mt-3 italic line-clamp-3">"{selectedDetailBook.description}"</p>
+                  </div>
+                  <div className="flex items-center justify-between mt-5 pt-3 border-t border-zinc-800">
+                    <span className="text-sm font-mono font-bold text-amber-400">R$ {selectedDetailBook.price.toFixed(2)}</span>
+                    <button 
+                      onClick={() => {
+                        handleAddToCart(selectedDetailBook);
+                        setSelectedDetailBook(null);
+                      }}
+                      className="px-4 py-2 bg-red-850 hover:bg-red-700 font-mono text-xxs font-bold uppercase rounded text-white cursor-pointer"
                     >
-                      <LucideIcon name="RotateCcw" size={13} />
-                      <span>Zerar Acervo</span>
+                      Adicionar à Sacola
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
 
+        {/* VIEW 1: HOME */}
+        {currentView === 'home' && (
+          <>
+            {/* Whimsical Hero Section */}
+            <section className="relative py-16 sm:py-24 px-4 max-w-6xl mx-auto overflow-hidden text-center lg:text-left">
+              <div className="absolute top-[5%] right-[2%] text-amber-900/10 pointer-events-none">
+                <svg className="w-16 h-16 animate-magical-sparkle" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l2.4 5.6L20 10l-5.6 2.4L12 18l-2.4-5.6L4 10l5.6-2.4z"/>
+                </svg>
               </div>
 
-              {/* Form placement */}
-              {isFormOpen && (
-                <div id="form-container-box" className="mb-8 p-0.5 bg-amber-900/5 rounded-3xl">
-                  <AddBookForm 
-                    onAddBook={handleAddBook}
-                    onEditBook={editingBook}
-                    onSaveEditedBook={handleSaveEditedBook}
-                    onClose={() => {
-                      setIsFormOpen(false);
-                      setEditingBook(null);
-                    }}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                {/* Left Content Column */}
+                <div className="lg:col-span-7 space-y-6">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/30 text-red-400 text-xs font-bold uppercase tracking-wider border border-red-900/20">
+                    <span>🕵️‍♂️</span>
+                    <span>Dossiês de Romance Psicológico & Suspense</span>
+                    <span>🕵️‍♂️</span>
+                  </div>
+
+                  <h2 className="text-4xl sm:text-6xl font-serif font-black text-slate-100 tracking-tight leading-[1.08]">
+                    Entre na mente de personagens e <span className="text-red-500 block sm:inline font-serif italic font-normal">desvende segredos ocultos.</span>
+                  </h2>
+
+                  <p className="text-slate-300 text-sm sm:text-lg max-w-xl leading-relaxed font-sans mx-auto lg:mx-0">
+                    Explore nosso acervo curado sob medida com thrillers envolventes, suspense forense e dark romances obsessionais. Adicione faturas estruturadas diretamente para download integrado e exportação ao Google Sheets!
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                    <button
+                      onClick={() => { setCurrentView('catalog'); window.scrollTo(0,0); }}
+                      className="button-magic-primary px-8 py-4 text-xs font-semibold sm:text-sm tracking-wider shadow-lg bg-[#EF4444] hover:bg-red-700 hover:border-red-600 text-white rounded-lg cursor-pointer font-mono uppercase"
+                    >
+                      <span>Investigar Catálogo Completo 🔍</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => { setCurrentView('faq'); window.scrollTo(0,0); }}
+                      className="button-magic-secondary px-8 py-4 text-xs font-semibold sm:text-sm border border-zinc-700 bg-zinc-900/55 hover:bg-zinc-800 hover:text-white text-slate-300 rounded-lg cursor-pointer"
+                    >
+                      <span>Vozes Unidas: FAQ Operacional</span>
+                    </button>
+                  </div>
+
+                  {/* Quick Stats Banner of Bookstore */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-[#12131A] border border-[#2D303D] rounded-[28px] shadow-sm relative z-10 text-center">
+                    <div className="border-[#2D303D] border-r last:border-r-0 py-1">
+                      <span className="text-xl sm:text-2xl font-serif font-black text-slate-100">{books.length}</span>
+                      <span className="block text-[9px] font-mono uppercase tracking-wider text-slate-400 mt-0.5 font-bold">Casos</span>
+                    </div>
+                    <div className="border-[#2D303D] border-r last:border-r-0 py-1">
+                      <span className="text-xl sm:text-2xl font-serif font-black text-emerald-500">100%</span>
+                      <span className="block text-[9px] font-mono uppercase tracking-wider text-slate-400 mt-0.5 font-bold">Sigiloso</span>
+                    </div>
+                    <div className="border-[#2D303D] border-r last:border-r-0 py-1">
+                      <span className="text-xl sm:text-2xl font-serif font-black text-[#D15525]">{books.reduce((val, b) => val + b.likes, 340)}</span>
+                      <span className="block text-[9px] font-mono uppercase tracking-wider text-slate-400 mt-0.5 font-bold">Depoimentos</span>
+                    </div>
+                    <div className="py-1">
+                      <span className="text-lg sm:text-xl font-mono font-black text-purple-400 block pt-1">SHEETS</span>
+                      <span className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mt-0.5 font-bold">Exportador</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: 3D interactive launching book side-attached */}
+                <div id="launch-book-container" className="lg:col-span-5 w-full flex justify-center">
+                  <ThreeDLaunchBook 
+                    onAddToCart={handleAddToCart} 
+                    onOpenBookDetails={(book) => { setSelectedBookForPage(book); setCurrentView('book-detail'); window.scrollTo(0,0); }} 
                   />
                 </div>
+              </div>
+
+              {/* Divider Book Spine */}
+              <div className="mt-14 w-32 h-1.5 bg-gradient-to-r from-transparent via-red-900/25 to-transparent mx-auto rounded-full" />
+            </section>
+
+            {/* Section Divider - SVG of turning book pages */}
+            <div className="turning-page-divider" />
+
+            {/* Features & Safe Transmutations Info */}
+            <section id="how" className="py-12 bg-[#111218] border-t border-[#2D303D]">
+              <Features />
+            </section>
+
+            {/* Clean call to action to visit catalog */}
+            <section className="py-16 bg-[#12131A] border-t border-[#2D303D] text-center text-slate-100">
+              <div className="max-w-xl mx-auto px-4">
+                <span className="text-[10px] uppercase font-mono tracking-widest text-[#EF4444] font-black">Investigue as Evidências</span>
+                <h3 className="text-2xl sm:text-3xl font-serif font-black text-slate-100 mt-2">Dossiê Completo de Crime & Mistério</h3>
+                <p className="text-xs sm:text-sm text-slate-400 font-sans mt-3">Subimos novos lançamentos psicossociais e analisadores de comportamento sob custódia seleta. O catálogo exclusivo está focado unicamente no acervo livre de poluição visual.</p>
+                <button
+                  onClick={() => { setCurrentView('catalog'); window.scrollTo(0,0); }}
+                  className="mt-6 px-6 py-3 bg-[#EF4444] hover:bg-red-700 text-white font-mono text-xs uppercase font-bold tracking-wider rounded-lg transition-all shadow-md hover:-translate-y-0.5 cursor-pointer"
+                >
+                  Abrir Páginas do Catálogo 📕
+                </button>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* VIEW 2: EXCLUSIVO CATALOG */}
+        {currentView === 'catalog' && (
+          <section id="bookshelf-grid" className="py-12 bg-[#FCFAF2] min-h-[75vh]">
+            <div className="max-w-6xl mx-auto px-4 sm:px-12">
+              
+              {/* Optional Admin controls panel directly nested inside catalog page when ADM is logged in! */}
+              {isAdminMode && (
+                <div className="mb-10 p-6 bg-[#FAF4E0] border border-amber-900/15 rounded-3xl text-left">
+                  <div className="bg-amber-950 text-amber-50 p-6 rounded-2xl border border-amber-900/20 shadow-md mb-6 relative overflow-hidden">
+                    <div className="absolute right-6 top-6 opacity-10">
+                      <LucideIcon name="Settings" size={80} />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-10 relative">
+                      <div>
+                        <span className="text-[10px] font-mono uppercase font-bold tracking-widest text-[#C09228]">🔑 Painel Diretor do Acervo (Acesso Único ADM)</span>
+                        <h3 className="text-lg font-serif font-bold text-white mt-1">Bem-vindo, Administrador!</h3>
+                        <p className="text-xs text-amber-150/70 mt-1">Sua conta exclusiva permite ditar novas evidências literárias, cadastrá-las no acervo ou faturar os dossiês.</p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingBook(null);
+                            setIsFormOpen(!isFormOpen);
+                          }}
+                          className="px-4 py-2 rounded-xl bg-amber-100 text-amber-950 hover:bg-amber-200 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                        >
+                          <LucideIcon name={isFormOpen && !editingBook ? "BookX" : "Plus"} size={14} />
+                          <span>{isFormOpen && !editingBook ? 'Fechar Cadastro' : 'Subir Novo Livro'}</span>
+                        </button>
+
+                        <button
+                          onClick={handleResetCatalog}
+                          className="px-4 py-2 rounded-xl bg-red-950/50 hover:bg-red-900/60 text-red-200 border border-red-900/40 text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5"
+                        >
+                          <LucideIcon name="RotateCcw" size={13} />
+                          <span>Restaurar Padrão</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {isFormOpen && (
+                    <div id="form-container-box" className="mb-8 p-0.5 bg-amber-900/5 rounded-3xl">
+                      <AddBookForm 
+                        onAddBook={handleAddBook}
+                        onEditBook={editingBook}
+                        onSaveEditedBook={handleSaveEditedBook}
+                        onClose={() => {
+                          setIsFormOpen(false);
+                          setEditingBook(null);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               )}
+
+              {/* Catalog Top bar Filters & Search inputs */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 text-left">
+                <div>
+                  <span className="font-serif italic font-normal text-xs text-red-700 bg-red-50 border border-red-900/15 px-3 py-1 rounded-full inline-block">
+                    📖 Catálogo Exclusivo e Limpo
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-black text-[#12131C] mt-3 leading-tight">
+                    Livros de Romance Psicológico & Suspense
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 font-sans mt-1">
+                    Sem banners ou anúncios. Apenas literatura forense profunda organizada sob filtros.
+                  </p>
+                </div>
+
+                {/* Search text filter bar */}
+                <div className="w-full md:w-80 relative">
+                  <input
+                    type="text"
+                    placeholder="Buscar livro, termo de crime, autor..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-white border border-red-900/15 rounded-full py-2.5 pl-10 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-850 text-slate-900 font-mono shadow-inner"
+                  />
+                  <div className="absolute left-3.5 top-3.5 text-red-700/60">
+                    <LucideIcon name="Search" size={14} />
+                  </div>
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-4 top-2.5 text-red-900/60 hover:text-red-950 text-xxs font-mono font-bold uppercase cursor-pointer"
+                    >
+                      limpar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Filters selectors */}
+              <div className="flex flex-wrap items-center gap-2.5 mb-8 pb-5 border-b border-zinc-200">
+                <span className="text-[11px] font-mono font-black text-slate-500 mr-2 uppercase">Filtrar Categoria:</span>
+                {['Todas', 'Thriller Psicológico', 'Dark Romance', 'Suspense Policial', 'Terror Mentis'].map((cat) => {
+                  const isActive = selectedCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
+                        isActive 
+                          ? 'bg-red-800 text-white border-red-800 shadow-md bg-gradient-to-r from-red-850 to-red-650' 
+                          : 'bg-white hover:bg-slate-100 text-[#12131C] border-slate-300 shadow-xs'
+                      }`}
+                    >
+                      {cat === 'Todas' && '📚 Todas as Obras'}
+                      {cat === 'Thriller Psicológico' && '🧠 Thriller Psicológico'}
+                      {cat === 'Dark Romance' && '🌹 Dark Romance'}
+                      {cat === 'Suspense Policial' && '🕵️‍♂️ Suspense Policial'}
+                      {cat === 'Terror Mentis' && '👁️ Terror Mentis'}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Books block */}
+              <div className="w-full">
+                {filteredBooks.length === 0 ? (
+                  <div className="text-center py-16 bg-[#12131A] border border-dashed border-zinc-800 rounded-2xl max-w-sm mx-auto p-8 relative">
+                    <span className="text-4xl block mb-2 select-none">🕵️‍♂️</span>
+                    <h4 className="font-serif font-black text-slate-100 text-base">Nenhuma obra localizada</h4>
+                    <p className="text-xs text-slate-400 mt-2 leading-relaxed font-sans">Sem ocorrências registradas para "{searchQuery}". Altere os filtros acima para restaurar a lista.</p>
+                    <button onClick={() => { setSearchQuery(''); setSelectedCategory('Todas'); }} className="mt-4 text-xs font-bold text-[#EF4444] hover:underline">Restaurar Filtros</button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredBooks.map((book) => (
+                      <BookCard 
+                        key={book.id}
+                        book={book}
+                        onLike={handleLike}
+                        onAddComment={handleAddComment}
+                        onAddToCart={handleAddToCart}
+                        isAdmin={isAdminMode}
+                        onEdit={handleTriggerEdit}
+                        onDelete={handleDeleteBook}
+                        onMoveUp={handleMoveUp}
+                        onMoveDown={handleMoveDown}
+                        onSelect={(b) => { setSelectedBookForPage(b); setCurrentView('book-detail'); window.scrollTo(0,0); }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Page footer summary bar */}
+              <div className="mt-12 flex flex-col sm:flex-row items-center justify-between text-slate-500 text-xs font-mono pt-6 border-t border-slate-200 gap-4 text-left">
+                <p>Mostrando {filteredBooks.length} de {books.length} obras registradas no arquivo de evidências do faturamento do acervo.</p>
+                <button onClick={handleResetCatalog} className="text-[#EF4444] hover:underline font-bold flex items-center gap-1.5">
+                  <LucideIcon name="BookOpen" size={13} />
+                  <span>Restaurar catálogo inicial completo</span>
+                </button>
+              </div>
 
             </div>
           </section>
         )}
 
-        {/* Main Books Grid catalog */}
-        <section id="bookshelf-grid" className="py-16 bg-[#FCFAF2] border-b border-amber-900/10">
-          <div className="max-w-6xl mx-auto px-4 sm:px-12">
-            
-            {/* Catalog Top bar Filters & Search inputs */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-              
-              <div>
-                <span className="font-serif italic font-normal text-xs text-amber-700 bg-amber-50 border border-amber-900/15 px-3 py-1 rounded-full inline-block">
-                  📚 Nosso Acervo Sagrado
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-serif font-black text-amber-950 mt-3 leading-tight">
-                  Pergaminhos & Livros Vivos
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-500 font-serif mt-1">
-                  Selecione as famílias de leitura para encantar os sentidos ou busque pelas runas abaixo.
-                </p>
-              </div>
-
-              {/* Search text filter bar */}
-              <div className="w-full md:w-80 relative">
-                <input
-                  type="text"
-                  placeholder="Buscar pelo título, saberes ou autor..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-amber-900/15 rounded-full py-2.5 pl-10 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/10 focus:border-amber-800 text-amber-950 font-serif shadow-inner"
-                />
-                <div className="absolute left-3.5 top-3 text-amber-900/40">
-                  <LucideIcon name="Search" size={14} />
-                </div>
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-4 top-2.5 text-amber-900/60 hover:text-amber-950 text-xxs font-mono font-bold uppercase cursor-pointer"
-                  >
-                    limpar
-                  </button>
-                )}
-              </div>
-
-            </div>
-
-            {/* Filters selectors */}
-            <div className="flex flex-wrap items-center gap-2.5 mb-8 pb-5 border-b border-zinc-800">
-              <span className="text-[11px] font-mono font-black text-slate-400 mr-2 uppercase">Filtrar Acervo:</span>
-              
-              {['Todas', 'Thriller Psicológico', 'Dark Romance', 'Suspense Policial', 'Terror Mentis'].map((cat) => {
-                const isActive = selectedCategory === cat;
+        {/* VIEW 3: LOGIN & TRACKING PROFILE */}
+        {currentView === 'tracking' && (
+          <section className="py-12 px-4 max-w-5xl mx-auto min-h-[75vh]">
+            {currentUser ? (
+              // Logged-in profile and order status tracker list!
+              <div className="text-left grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
-                      isActive 
-                        ? 'bg-red-800 text-white border-red-800 shadow-md' 
-                        : 'bg-[#12131A]/60 hover:bg-[#1A1C24] text-slate-300 border-zinc-800'
-                    }`}
-                  >
-                    {cat === 'Todas' && '📚 Todas as Obras'}
-                    {cat === 'Thriller Psicológico' && '🧠 Thriller Psicológico'}
-                    {cat === 'Dark Romance' && '🌹 Dark Romance'}
-                    {cat === 'Suspense Policial' && '🕵️‍♂️ Suspense Policial'}
-                    {cat === 'Terror Mentis' && '👁️ Terror Mentis'}
-                  </button>
-                );
-              })}
-            </div>
+                {/* Profile Card left */}
+                <div className="bg-[#12131A] border border-[#2D303D] p-6 rounded-3xl h-fit shadow-xl">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 rounded-full bg-red-950/40 border border-[#EF4444]/30 flex items-center justify-center font-serif text-2xl text-[#EF4444] font-black">
+                      {currentUser.name[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase bg-red-950/40 text-red-500 border border-red-900/20 px-2.5 py-1 rounded inline-block font-bold">
+                        {currentUser.role === 'admin' ? '🛡️ Comando Admin (ADMIN)' : '🕵️‍♂️ Investigador Autorizado'}
+                      </span>
+                      <h3 className="font-serif font-black text-slate-100 text-lg mt-1">{currentUser.name}</h3>
+                    </div>
+                  </div>
 
-            {/* Full-width layout for Books catalog */}
-            <div className="w-full">
-              {filteredBooks.length === 0 ? (
-                <div className="text-center py-16 bg-[#12131A] border border-dashed border-zinc-800 rounded-2xl max-w-md mx-auto p-8 relative">
-                  <span className="text-4xl block mb-2 select-none">🕵️‍♂️</span>
-                  <h4 className="font-serif font-black text-slate-100 text-base">
-                    Nenhuma obra ou evidência catalogada
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-2 leading-relaxed font-sans">
-                    Não encontramos obras com o termo "{searchQuery}" inseridas nesta categoria. Tente limpar os filtros de busca ou cadastre um novo dossiê literário!
+                  <p className="text-xs text-slate-400 leading-relaxed font-sans mb-6">
+                    Acesso estabelecido sob criptografia SSL. Seu pseudônimo está catalogado neste painel para consulta em tempo real ao andamento do pedido.
                   </p>
+
+                  <div className="space-y-3 pt-4 border-t border-zinc-805">
+                    <div className="text-xs flex justify-between">
+                      <span className="text-slate-500 font-mono font-bold">Status do Acesso:</span>
+                      <span className="text-emerald-400 font-bold font-mono">Conexão Ativa</span>
+                    </div>
+                    <div className="text-xs flex justify-between">
+                      <span className="text-slate-500 font-mono font-bold">Banco de Dados:</span>
+                      <span className="text-slate-300 font-mono">Simulador + Google Sheets</span>
+                    </div>
+                  </div>
+
                   <button
                     onClick={() => {
-                      setSearchQuery('');
-                      setSelectedCategory('Todas');
+                      setCurrentUser(null);
+                      triggerNotification('Sessão encerrada com segurança.');
                     }}
-                    className="mt-4 text-xs font-bold text-red-500 hover:underline"
+                    className="w-full mt-8 py-2.5 bg-red-950/50 hover:bg-red-900/60 text-red-200 border border-red-500/20 rounded-xl font-mono text-xs uppercase font-bold cursor-pointer transition-colors"
                   >
-                    Restaurar Filtros de Busca
+                    Encerrar Investigação (Sair)
                   </button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredBooks.map((book) => (
-                    <BookCard 
-                      key={book.id}
-                      book={book}
-                      onLike={handleLike}
-                      onAddComment={handleAddComment}
-                      onAddToCart={handleAddToCart}
-                      isAdmin={isAdminMode}
-                      onEdit={handleTriggerEdit}
-                      onDelete={handleDeleteBook}
-                      onMoveUp={handleMoveUp}
-                      onMoveDown={handleMoveDown}
-                    />
-                  ))}
+
+                {/* Orders tracking list right (2/3 cols) */}
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="bg-[#12131A] border border-[#2D303D] p-6 rounded-3xl shadow-xl">
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
+                      <h4 className="font-serif font-black text-slate-100 text-xl flex items-center gap-2">
+                        <LucideIcon name="Package" className="text-[#EF4444]" />
+                        <span>Andamento do Pedido & Rastreamento</span>
+                      </h4>
+                      <span className="text-xs font-mono text-slate-400">Total: {isAdminMode ? orders.length : orders.filter(o => o.customerName.toLowerCase() === currentUser.name.toLowerCase()).length} pedidos</span>
+                    </div>
+
+                    {/* Filter user orders list or show all orders if Admin is logged in */}
+                    {(currentUser.role === 'admin' ? orders : orders.filter(o => o.customerName.toLowerCase() === currentUser.name.toLowerCase())).length === 0 ? (
+                      <div className="text-center py-16">
+                        <span className="text-4xl block mb-2">👁️</span>
+                        <p className="text-xs text-slate-400 font-sans max-w-sm mx-auto leading-relaxed text-center">Nenhum dossiê de faturamento associado neste terminal ainda. Adicione livros à sacola, finalize a compra e acompanhe seu rastreio aqui em tempo real!</p>
+                        <button onClick={() => setCurrentView('catalog')} className="mt-4 text-xs font-mono font-bold uppercase text-[#EF4444] hover:underline">Abrir Catálogo</button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {(currentUser.role === 'admin' ? orders : orders.filter(o => o.customerName.toLowerCase() === currentUser.name.toLowerCase())).map((ord) => {
+                          const stages = [
+                            { name: '🔬 Avaliando Evidências', statusKey: 'Avaliando Evidências' },
+                            { name: '📦 Lacre Kraft Preparado', statusKey: 'Preparando Lacre Kraft' },
+                            { name: '✉️ Despachado em Sigilo', statusKey: 'Despachado em Sigilo' },
+                            { name: '🏠 Dossiê Entregue', statusKey: 'Entregue' }
+                          ];
+                          
+                          const activeIndex = stages.findIndex(s => s.statusKey === ord.status);
+
+                          return (
+                            <div key={ord.id} className="p-5 bg-black/40 border border-zinc-850 rounded-2xl relative overflow-hidden">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-800 pb-3 mb-4">
+                                <div>
+                                  <span className="text-[10px] font-mono text-slate-500 block">ID DO PEDIDO</span>
+                                  <span className="text-sm font-mono font-bold text-amber-400">{ord.id}</span>
+                                </div>
+                                <div className="text-left sm:text-right">
+                                  <span className="text-[10px] font-mono text-slate-500 block">DATA COMPRA</span>
+                                  <span className="text-xs text-slate-300 font-mono">{ord.date}</span>
+                                </div>
+                                <div className="text-left sm:text-right">
+                                  <span className="text-[10px] font-mono text-slate-500 block">DESTINATÁRIO</span>
+                                  <span className="text-xs text-slate-100 font-bold font-sans">{ord.customerName} (CEP: {ord.cep})</span>
+                                </div>
+                              </div>
+
+                              <div className="text-xs text-slate-300 font-sans mb-4 text-left">
+                                <span className="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px] font-mono">Livros no Dossiê:</span>
+                                <p className="leading-relaxed text-slate-200">
+                                  {ord.items.map(it => `${it.quantity}x "${it.title}"`).join('; ')}
+                                </p>
+                              </div>
+
+                              {/* Progress Track visual status */}
+                              <div className="mt-5 bg-zinc-950/40 p-4 rounded-xl border border-zinc-800">
+                                <span className="text-[10px] font-mono text-slate-400 block mb-3 uppercase tracking-wider font-bold">Progresso das Evidências (Siga as Fases):</span>
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-center">
+                                  {stages.map((st, idx) => {
+                                    const isCompleted = idx <= activeIndex;
+                                    const isCurrent = idx === activeIndex;
+                                    
+                                    return (
+                                      <div 
+                                        key={st.name} 
+                                        className={`p-2 rounded-lg border text-[10px] font-bold font-mono transition-all ${
+                                          isCurrent 
+                                            ? 'bg-red-950/40 border-[#EF4444] text-red-400 animate-pulse ring-2 ring-red-900/40' 
+                                            : isCompleted 
+                                              ? 'bg-zinc-950/80 border-slate-705 text-slate-300' 
+                                              : 'bg-black/35 border-transparent text-slate-600'
+                                        }`}
+                                      >
+                                        <span>{st.name}</span>
+                                        {isCurrent && <span className="block text-[8px] text-[#EF4444]/75 mt-0.5">ESTÁGIO ATUAL</span>}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Admin capability to change order status on the fly! */}
+                              {isAdminMode && (
+                                <div className="mt-5 border-t border-zinc-800 pt-4 flex items-center justify-between gap-4">
+                                  <span className="text-xs text-[#EF4444] font-bold font-mono">🛠️ Comando Administrador: Atualizar Rastreio:</span>
+                                  <select
+                                    value={ord.status}
+                                    onChange={(e) => {
+                                      const updatedStatus = e.target.value;
+                                      setOrders(prev => prev.map(o => o.id === ord.id ? { ...o, status: updatedStatus } : o));
+                                      triggerNotification(`Status do pedido ${ord.id} atualizado para "${updatedStatus}"!`);
+                                    }}
+                                    className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-[#EF4444]"
+                                  >
+                                    <option value="Avaliando Evidências">🔬 Avaliando Evidências</option>
+                                    <option value="Preparando Lacre Kraft">📦 Preparando Lacre Kraft</option>
+                                    <option value="Despachado em Sigilo">✉️ Despachado em Sigilo</option>
+                                    <option value="Entregue">🏠 Entregue</option>
+                                  </select>
+                                </div>
+                              )}
+
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                  </div>
                 </div>
-              )}
-            </div>
 
-            {/* Quick summary line under bookshelf */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between text-slate-500 text-xs font-mono pt-6 border-t border-zinc-800 gap-4">
-              <p>Indexando {filteredBooks.length} de {books.length} publicações forenses e de suspense na vitrine.</p>
+              </div>
+            ) : (
+              // Logged out: Multi-Tab elegant login form!
+              <div className="bg-[#12131A] border border-[#2D303D] max-w-xl mx-auto rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                <div className="text-center mb-8">
+                  <span className="w-12 h-12 rounded-2xl bg-red-950/40 border border-[#EF4444]/30 text-2xl flex items-center justify-center mx-auto mb-4 text-[#EF4444] font-serif font-black">
+                    Ψ
+                  </span>
+                  <h3 className="font-serif font-black text-[#F1F5F9] text-2xl">Acesso Central Literário</h3>
+                  <p className="text-xs text-slate-400 mt-2 font-sans max-w-sm mx-auto">Registre suas credenciais para verificar o andamento do pedido ou assumir privilégios diretivos de administrador.</p>
+                </div>
+
+                {/* Simulated login with standard credentials */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const fd = new FormData(e.currentTarget);
+                    const userVal = (fd.get('username') as string)?.trim() || 'Leitor Comum';
+                    const passVal = (fd.get('password') as string)?.trim() || '';
+
+                    if (userVal.toLowerCase() === 'admin') {
+                      if (passVal === 'admin') {
+                        const adminUser = { name: 'Comandante Forense', role: 'admin' as const };
+                        setCurrentUser(adminUser);
+                        triggerNotification('🔑 Conexão estabelecida com sucesso! Painel Administrativo Ativado.');
+                      } else {
+                        alert('A senha do administrador é "admin"! Tente novamente ou entre no Acesso Comum removendo o login "admin".');
+                      }
+                    } else {
+                      const clientUser = { name: userVal, role: 'user' as const };
+                      setCurrentUser(clientUser);
+                      triggerNotification(`🕵️‍♂️ Investigador "${userVal}" autenticado! Carregando andamento de pedidos...`);
+                    }
+                  }}
+                  className="space-y-5 text-left"
+                >
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Insira seu Pseudônimo / Nome:</label>
+                    <input 
+                      type="text" 
+                      name="username"
+                      placeholder="Ex: Beatriz ou admin"
+                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#EF4444] font-mono leading-none"
+                      required
+                    />
+                    <p className="text-[10px] text-zinc-500 font-mono">Use seu primeiro nome para criar um perfil livre de rastreio, ou use "admin" para ADM.</p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Senha Mística (Livre para Usuário):</label>
+                    <input 
+                      type="password" 
+                      name="password"
+                      placeholder="Senha do usuário (ou 'admin' para ADM)"
+                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#EF4444] font-mono leading-none"
+                    />
+                    <div className="bg-[#1C1D24] p-2.5 rounded-lg border border-zinc-800 mt-2 flex items-center justify-between text-[10px] font-mono text-amber-400/85">
+                      <span>🔑 CREDENCIAIS DO ADM EXCLUSIVO:</span>
+                      <strong className="font-extrabold bg-zinc-950 px-2 py-0.5 rounded text-white border border-zinc-800">user: admin | senha: admin</strong>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 bg-red-800 hover:bg-red-700 text-white font-mono text-xs uppercase font-extrabold tracking-wider rounded-xl transition-transform active:scale-98 shadow-lg cursor-pointer mt-2"
+                  >
+                    Homologar Credenciais e Acessar
+                  </button>
+
+                  <div className="text-center pt-2">
+                    <p className="text-[10px] text-slate-500 font-sans">O acesso padrão de comprador é totalmente livre de registros extras. Digite seu nickname e clique no botão acima.</p>
+                  </div>
+                </form>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* VIEW 4: FAQ (DÚVIDAS & RESPOSTAS INTERATIVAS) */}
+        {currentView === 'faq' && (
+          <section className="py-12 px-4 max-w-4xl mx-auto min-h-[75vh]">
+            <div className="text-left bg-[#12131A] border border-[#2D303D] p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-5 mb-8">
+                <div>
+                  <span className="text-[10px] uppercase font-mono tracking-widest text-[#EF4444] bg-[#2E1414] px-3 py-1 rounded inline-block border border-red-900/20 font-bold">FAQ DE RESPOSTAS</span>
+                  <h3 className="font-serif font-black text-slate-100 text-3xl mt-2 leading-none">Dúvidas Forenses & Ajuda</h3>
+                  <p className="text-xs text-slate-400 mt-2.5 font-sans">Esclarecemos suas dúvidas sobre embalagens, faturamentos, exportação do Sheets ou envios.</p>
+                </div>
+                <button
+                  onClick={() => { setCurrentView('catalog'); }}
+                  className="px-4 py-2 bg-[#1C1E26] hover:bg-zinc-850 text-slate-300 font-mono text-xs font-bold rounded-lg border border-zinc-800 shrink-0 self-start sm:self-auto cursor-pointer"
+                >
+                  Ir para Catálogo
+                </button>
+              </div>
+
+              {/* FAQ items loop */}
+              <div className="space-y-6">
+                {faqQuestions.map((q) => (
+                  <div key={q.id} className="p-5 bg-black/40 border border-zinc-805 rounded-2xl relative">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold text-slate-200 font-sans flex items-center gap-1.5">
+                        <span>🕵️‍♂️</span>
+                        <span>{q.userName}</span>
+                      </span>
+                      <span className="text-[10px] font-mono text-zinc-500">{q.date}</span>
+                    </div>
+
+                    <h4 className="text-sm font-sans font-black text-amber-100 leading-relaxed text-left">
+                      "{q.question}"
+                    </h4>
+
+                    {q.replied ? (
+                      <div className="mt-3 bg-[#1C1E26] p-3.5 rounded-xl border border-zinc-800">
+                        <span className="text-[9px] font-mono font-black text-red-500 block mb-1">RESPOSTA DO COMANDO ADM:</span>
+                        <p className="text-xs text-slate-300 leading-relaxed font-sans">{q.replyText}</p>
+                      </div>
+                    ) : (
+                      <div className="mt-3 text-xs italic text-zinc-500 flex items-center gap-1.5 bg-black/35 p-2 rounded-lg border border-dashed border-zinc-800">
+                        <LucideIcon name="Clock" size={12} className="text-amber-500 animate-spin" />
+                        <span>Aguardando parecer técnico da gerência ADM para publicação pública.</span>
+                      </div>
+                    )}
+
+                    {/* Admin answering interface inline! */}
+                    {isAdminMode && !q.replied && (
+                      <form 
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const fd = new FormData(e.currentTarget);
+                          const text = (fd.get('reply_text') as string)?.trim();
+                          if (!text) return;
+                          
+                          setFaqQuestions(prev => prev.map(item => item.id === q.id ? {
+                            ...item,
+                            replied: true,
+                            replyText: text
+                          } : item));
+                          triggerNotification('Resposta técnica cadastrada no FAQ com sucesso!');
+                        }}
+                        className="mt-4 pt-3 border-t border-zinc-800 flex flex-col gap-2"
+                      >
+                        <span className="text-[9px] font-mono font-bold text-red-400 text-left">Assumir Resposta (Privilégio ADM):</span>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            name="reply_text"
+                            placeholder="Escreva sua resposta técnica..."
+                            className="bg-[#1C1E26] border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-slate-100 flex-grow focus:outline-none focus:border-red-650 font-sans"
+                            required
+                          />
+                          <button
+                            type="submit"
+                            className="bg-[#EF4444] hover:bg-red-600 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-4 rounded-lg cursor-pointer"
+                          >
+                            Registrar Resposta
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* User question submit form */}
+              <div className="mt-12 bg-[#1C1E26] border border-zinc-800 rounded-2xl p-5">
+                <h4 className="font-serif font-bold text-lg text-slate-100 flex items-center gap-1.5 mb-2">
+                  <LucideIcon name="MessageSquare" className="text-red-500" />
+                  <span>Mandar pergunta ao FAQ</span>
+                </h4>
+                <p className="text-xs text-slate-400 font-sans mb-4">Tem alguma dúvida ou gostaria de relatar uma inconsistência técnica? Complete a ata e envie.</p>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const fd = new FormData(e.currentTarget);
+                    const qAuthor = (fd.get('faq_author') as string)?.trim() || 'Comprador Anônimo';
+                    const qText = (fd.get('faq_text') as string)?.trim() || '';
+
+                    if (!qText) return;
+
+                    const newQuestion: FAQQuestion = {
+                      id: String(Date.now()),
+                      userName: qAuthor,
+                      question: qText,
+                      date: new Date().toLocaleDateString('pt-BR'),
+                      replied: false
+                    };
+
+                    setFaqQuestions(prev => [...prev, newQuestion]);
+                    triggerNotification('Sua pergunta foi enviada ao Comando! Aguarde a homologação técnica da resposta.');
+                    e.currentTarget.reset();
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      name="faq_author"
+                      placeholder="Seu pseudônimo..."
+                      className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-red-600 font-sans"
+                      maxLength={40}
+                      required
+                    />
+                    <span className="text-[10px] text-zinc-500 font-mono py-2 text-left sm:text-right">Sua pergunta constará nesta aba.</span>
+                  </div>
+
+                  <input
+                    type="text"
+                    name="faq_text"
+                    placeholder="Sua pergunta / relato de dúvida técnica..."
+                    className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:border-red-650 font-sans"
+                    maxLength={200}
+                    required
+                  />
+
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-red-800 hover:bg-red-700 text-white font-mono text-xs uppercase font-bold rounded-lg cursor-pointer shadow-md transition-colors"
+                  >
+                    Registrar Pergunta Forense
+                  </button>
+                </form>
+              </div>
+
+            </div>
+          </section>
+        )}
+
+        {/* VIEW 5: SINGLE BOOK DETAIL PAGE */}
+        {currentView === 'book-detail' && selectedBookForPage && (
+          <section className="py-12 px-4 max-w-5xl mx-auto min-h-[75vh]">
+            <div className="text-left bg-[#12131A] border border-[#2D303D] p-6 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
               
-              <button 
-                onClick={handleResetCatalog}
-                className="text-red-500 hover:underline hover:text-red-400 font-bold flex items-center gap-1 cursor-pointer"
-                title="Limpar LocalStorage"
-              >
-                <LucideIcon name="BookOpen" size={13} />
-                <span>Restaurar catálogo inicial de evidências</span>
-              </button>
+              {/* Back navigation bars */}
+              <div className="flex items-center gap-2 mb-8 border-b border-zinc-800 pb-4">
+                <button
+                  onClick={() => { setCurrentView('catalog'); }}
+                  className="flex items-center gap-1 text-xs font-mono font-bold text-red-500 hover:text-red-400 group cursor-pointer"
+                >
+                  <LucideIcon name="ChevronLeft" size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                  <span>Voltar ao Catálogo</span>
+                </button>
+                <span className="text-[#2D303D] font-mono text-xs">/</span>
+                <span className="text-xs text-slate-500 font-sans max-w-[200px] truncate">{selectedBookForPage.title}</span>
+              </div>
+
+              {/* Main detailed structure */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+                
+                {/* Book Cover Design */}
+                <div className="md:col-span-4 flex justify-center items-start">
+                  <div 
+                    className="book-card-magic w-[220px] h-[320px] shrink-0 flex flex-col justify-between p-6 text-left relative overflow-hidden shadow-2xl select-none"
+                    style={{
+                      background: selectedBookForPage.coverImage 
+                        ? 'none' 
+                        : `linear-gradient(135deg, ${selectedBookForPage.coverStyle.gradientStart}, ${selectedBookForPage.coverStyle.gradientEnd})`,
+                      color: '#FFFFFF'
+                    }}
+                  >
+                    {selectedBookForPage.coverImage && (
+                      <img 
+                        src={selectedBookForPage.coverImage} 
+                        alt={selectedBookForPage.title} 
+                        className="absolute inset-0 w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
+
+                    <div className="book-bound-spine" />
+                    <div className="book-pages-stack" />
+                    <div className="absolute top-3 right-3 opacity-30 z-10">
+                      <LucideIcon name="Bookmark" size={24} />
+                    </div>
+
+                    <div className="z-10">
+                      <span className="text-[10px] uppercase tracking-widest font-mono px-2.5 py-1 rounded-full bg-black/60 border border-white/20 text-[#EF4444] font-bold">
+                        {selectedBookForPage.category}
+                      </span>
+                    </div>
+
+                    <div className="z-10 my-auto drop-shadow-[0_3px_5px_rgba(0,0,0,0.95)]">
+                      <h4 className="font-serif font-black text-sm sm:text-base leading-snug tracking-normal line-clamp-3 text-white">
+                        {selectedBookForPage.title}
+                      </h4>
+                      <p className="text-[10px] mt-1.5 font-mono text-slate-300 opacity-90">
+                        por {selectedBookForPage.author}
+                      </p>
+                    </div>
+
+                    <div className="z-10 flex justify-between items-center border-t border-white/20 pt-2 mt-1">
+                      <span className="text-[9px] font-mono text-slate-300 opacity-80">Dossiê Exclusivo</span>
+                      <LucideIcon name={selectedBookForPage.coverStyle.iconName || 'BookOpen'} size={15} className="text-[#EF4444]" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cover Details information */}
+                <div className="md:col-span-8 flex flex-col justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2.5 mb-4">
+                      <span className="text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full bg-red-950/40 border border-red-900/30 text-red-400 font-mono">
+                        🕵️‍♂️ {selectedBookForPage.category}
+                      </span>
+                      {selectedBookForPage.isAuthored && (
+                        <span className="text-[9px] font-mono font-black tracking-widest text-[#EF4444] bg-[#2E1414] border border-[#EF4444]/30 rounded px-2.5 py-1" title="Publicação própria autografada">
+                          ⭐ OBRA AUTORAL
+                        </span>
+                      )}
+                      
+                      {/* Rating visual */}
+                      <span className="flex items-center gap-0.5 ml-1">
+                        {[...Array(5)].map((_, i) => (
+                          <span key={i} className="inline-block">
+                            <LucideIcon 
+                              name="Star" 
+                              size={14} 
+                              className={i < selectedBookForPage.stars ? "text-amber-400 fill-amber-400" : "text-zinc-700"} 
+                            />
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+
+                    <h2 className="font-serif font-black text-2xl sm:text-4xl text-slate-100 leading-tight">
+                      {selectedBookForPage.title}
+                    </h2>
+                    <p className="text-sm font-mono text-red-500 mt-1">Escriturado sob custódia de <span className="underline font-bold text-slate-200">{selectedBookForPage.author}</span></p>
+
+                    <div className="my-6 p-4 bg-zinc-950/40 rounded-xl border border-zinc-800">
+                      <span className="text-[10px] font-mono font-bold text-slate-400 block mb-2 uppercase tracking-widest">RESUMO CLÍNICO / ANÁLISE DO LIVRO:</span>
+                      <p className="text-sm text-slate-300 leading-relaxed font-sans italic">
+                        "{selectedBookForPage.description}"
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 text-xs font-sans text-slate-400 pt-1">
+                      <p className="flex items-center gap-2">
+                        <span className="font-bold text-slate-500 font-mono w-28 block uppercase">ID do Produto:</span>
+                        <span className="font-mono text-slate-300">{selectedBookForPage.id}</span>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="font-bold text-slate-500 font-mono w-28 block uppercase">Categoria:</span>
+                        <span className="text-slate-300">{selectedBookForPage.category}</span>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="font-bold text-slate-500 font-mono w-28 block uppercase">Recomendações:</span>
+                        <span className="text-red-400 font-black font-mono">{selectedBookForPage.likes} curtidores</span>
+                      </p>
+                    </div>
+
+                    {/* Price with buy CTA */}
+                    <div className="mt-8 flex items-baseline gap-3.5 border-t border-zinc-800 pt-6">
+                      {selectedBookForPage.discount ? (
+                        <>
+                          <span className="text-2xl sm:text-3xl font-mono font-black text-amber-400">
+                            R$ {(selectedBookForPage.price * (1 - selectedBookForPage.discount / 100)).toFixed(2)}
+                          </span>
+                          <span className="text-sm line-through text-zinc-500 font-mono">
+                            R$ {selectedBookForPage.price.toFixed(2)}
+                          </span>
+                          <span className="text-xs font-mono font-bold text-[#EF4444] bg-[#2E1414] px-2 py-0.5 rounded border border-[#EF4444]/20">
+                            {selectedBookForPage.discount}% OFF
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-2xl sm:text-3xl font-mono font-black text-amber-400">
+                          R$ {selectedBookForPage.price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 flex flex-wrap gap-4 pt-6 border-t border-zinc-800">
+                    <button
+                      onClick={() => {
+                        handleAddToCart(selectedBookForPage);
+                        triggerNotification(`"${selectedBookForPage.title}" adicionado à sua sacola.`);
+                      }}
+                      className="flex-grow sm:flex-grow-0 px-8 py-3.5 bg-[#EF4444] hover:bg-red-750 hover:border-red-600 rounded-xl text-white font-mono uppercase font-black text-xs tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all active:translate-y-0.5 cursor-pointer"
+                    >
+                      <LucideIcon name="ShoppingBag" size={15} />
+                      <span>Adicionar ao Dossiê (Comprar)</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleLike(selectedBookForPage.id);
+                        setBooks(prev => prev.map(item => item.id === selectedBookForPage.id ? { ...item, likes: item.likes + 1 } : item));
+                        setSelectedBookForPage(prev => prev ? { ...prev, likes: prev.likes + 1 } : null);
+                        triggerNotification('Obrigado pelo seu depoimento e voto!');
+                      }}
+                      className="px-6 py-3.5 bg-zinc-950/80 hover:bg-zinc-900 hover:text-white rounded-xl text-red-500 hover:border-zinc-800 font-mono text-xs uppercase font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-zinc-800"
+                    >
+                      <LucideIcon name="Heart" size={15} className="fill-red-900/10" />
+                      <span>Curtir Obra ({selectedBookForPage.likes})</span>
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Dynamic Comments List directly nested at bottom of single book details */}
+              <div className="mt-14 border-t border-[#2D303D] pt-10">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-serif font-black text-xl text-slate-100 flex items-center gap-2">
+                    <LucideIcon name="MessageSquare" className="text-red-500" />
+                    <span>Depoimentos & Análises Psíquicas ({selectedBookForPage.commentsList.length})</span>
+                  </h3>
+                  <span className="text-xs text-slate-500 font-mono">Espaço sob livre consulta do leitor</span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  
+                  {/* Left Column: List existing reviews */}
+                  <div className="lg:col-span-7 space-y-3 max-h-[380px] overflow-y-auto pr-2">
+                    {selectedBookForPage.commentsList.length === 0 ? (
+                      <div className="py-12 text-center bg-black/35 rounded-2xl border border-dashed border-zinc-800">
+                        <p className="text-xs text-slate-400 italic font-sans">
+                          Nenhuma análise registrada sobre este exemplar. Seja o primeiro a registrar suas impressões! 💭
+                        </p>
+                      </div>
+                    ) : (
+                      selectedBookForPage.commentsList.map((comm) => (
+                        <div key={comm.id} className="bg-black/40 rounded-xl p-4 border border-zinc-805 text-left">
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-xs font-bold font-sans text-slate-200">{comm.author}</span>
+                            <span className="text-[9.5px] font-mono text-slate-500">{comm.date}</span>
+                          </div>
+                          <p className="text-xs text-slate-300 leading-relaxed font-sans">{comm.text}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Right Column: Write a comment directly */}
+                  <div className="lg:col-span-5 bg-[#1C1E26] p-5 rounded-2xl border border-zinc-800 text-left">
+                    <h4 className="text-xs font-mono font-black text-slate-400 uppercase tracking-wider mb-2">Registrar nova Ata de Leitura</h4>
+                    <p className="text-xxs text-slate-500 leading-relaxed font-sans mb-4">Adicione suas impressões psicológicas e clínicas sobre este volume fictício.</p>
+
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const fd = new FormData(e.currentTarget);
+                        const pseud = (fd.get('pseudo') as string)?.trim() || 'Comprador';
+                        const txt = (fd.get('criticas') as string)?.trim() || '';
+
+                        if (!txt) return;
+
+                        handleAddComment(selectedBookForPage.id, pseud, txt);
+                        
+                        const newComm: Comment = {
+                          id: String(Date.now()),
+                          author: pseud,
+                          text: txt,
+                          date: new Date().toLocaleDateString('pt-BR')
+                        };
+
+                        setSelectedBookForPage(prev => prev ? {
+                          ...prev,
+                          commentsList: [newComm, ...prev.commentsList]
+                        } : null);
+
+                        triggerNotification('Sua nota de leitura foi adicionada com sucesso!');
+                        e.currentTarget.reset();
+                      }}
+                      className="space-y-4"
+                    >
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono font-bold text-slate-500 uppercase block">Seu Pseudônimo:</label>
+                        <input
+                          type="text"
+                          name="pseudo"
+                          placeholder="Ex: Delegada Marina"
+                          className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-red-650 font-sans w-full"
+                          maxLength={30}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono font-bold text-slate-500 uppercase block">Nota / Crítica:</label>
+                        <textarea
+                          name="criticas"
+                          placeholder="O que achou do enredo pscicossocial?"
+                          className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-red-650 font-sans w-full h-20 resize-none"
+                          maxLength={190}
+                          required
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 bg-[#EF4444] hover:bg-red-650 text-white font-mono text-xs uppercase font-extrabold tracking-wider rounded-xl transition-colors cursor-pointer"
+                      >
+                        Registrar Análise Clínico-Investigativa
+                      </button>
+                    </form>
+                  </div>
+
+                </div>
+              </div>
+
             </div>
-
-          </div>
-        </section>
-
-        {/* Section Divider - SVG of turning book pages up */}
-        <div className="turning-page-divider-up bg-slate-900" />
-
-        {/* Features & Safe Transmutations Info */}
-        <section id="how" className="py-8 bg-slate-900">
-          <Features />
-        </section>
+          </section>
+        )}
 
       </main>
 
