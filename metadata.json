@@ -1,6 +1,6 @@
 {
-  "name": "Livraria Sopro Mágico",
-  "description": "Uma charmosa e performática livraria virtual autoral e mágica, com sacola integrada, cálculo de CEP Correios e exportador místico de relatórios para Google Sheets.",
+  "name": "Guigotoverso",
+  "description": "O multiverso literário de guigoto monteiro: uma jornada mutável e surpreendente que viaja do suspense profundo aos romances escuros, romances limpos e comédias românticas abundantes.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

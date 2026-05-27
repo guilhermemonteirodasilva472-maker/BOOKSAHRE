@@ -40,7 +40,7 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(`Destaque Literário: ${book.title} por apenas R$ ${discountPrice.toFixed(2)} no Dossiê Psique!`);
+    navigator.clipboard.writeText(`Destaque Literário: ${book.title} por apenas R$ ${discountPrice.toFixed(2)} no Guigotoverso!`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -107,7 +107,7 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
               id="btn-add-launch-book"
             >
               <LucideIcon name="ShoppingBag" size={14} />
-              <span>Adicionar ao Dossiê (Comprar)</span>
+              <span>Adicionar à Sacola</span>
             </button>
 
             <button
@@ -115,7 +115,7 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
               className="button-magic-secondary text-xs py-3 px-4 rounded-full flex items-center gap-1.5"
             >
               <LucideIcon name="Search" size={13} />
-              <span>Investigar Obra</span>
+              <span>Ver Detalhes</span>
             </button>
 
             <button

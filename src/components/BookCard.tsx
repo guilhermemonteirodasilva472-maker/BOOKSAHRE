@@ -124,7 +124,7 @@ export default function BookCard({
           </div>
 
           <div className="z-10 flex justify-between items-center border-t border-white/20 pt-1.5 mt-1">
-            <span className="text-[8px] font-mono text-slate-300 opacity-80 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">Dossiê Oculto</span>
+            <span className="text-[8px] font-mono text-slate-300 opacity-80 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">Edição Exclusiva</span>
             <LucideIcon 
               name={book.coverStyle.iconName || 'BookOpen'} 
               size={13} 
@@ -274,7 +274,7 @@ export default function BookCard({
                 className="button-magic-primary text-[10px] py-2 px-4 shadow-md bg-red-800 hover:bg-red-700 hover:border-red-600 rounded-lg text-white font-mono uppercase font-bold"
               >
                 <LucideIcon name="ShoppingBag" size={12} />
-                <span>Adicionar ao Dossiê</span>
+                <span>Adicionar à Sacola</span>
               </button>
             )}
           </div>

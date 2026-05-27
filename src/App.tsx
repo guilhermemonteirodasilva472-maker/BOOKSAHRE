@@ -12,6 +12,101 @@ import Features from './components/Features';
 import LucideIcon from './components/LucideIcon';
 import ThreeDLaunchBook, { LAUNCH_BOOK } from './components/ThreeDLaunchBook';
 
+export const VIBES = {
+  suspense: {
+    id: 'suspense',
+    name: 'Suspense Forense',
+    tagline: 'Mistério & Terror Psicológico',
+    accentColor: 'text-red-500',
+    hoverAccentColor: 'hover:text-red-400',
+    accentBg: 'bg-red-850',
+    hoverAccentBg: 'hover:bg-red-750',
+    accentBorder: 'border-red-900',
+    accentBorderLight: 'border-[#EF4444]/30',
+    primaryGrad: 'from-[#0B0303] via-[#0E1015] to-[#07090C]',
+    headerLogoBg: 'bg-red-950/80 text-red-400 border-red-500/30',
+    logoSymbol: '💀',
+    logoText: 'text-red-500',
+    badgeStyle: 'bg-red-950/60 text-red-400 border-red-900/40',
+    buttonColor: 'bg-red-850 hover:bg-red-750 text-white',
+    quote: '"O mistério é a luz que brilha sob as fissuras de uma mente humana..."',
+    featuresTitle: 'MISTÉRIOS CATALOGADOS',
+    heroTitle: 'Entre na mente de personagens e ',
+    heroHighlight: 'desvende segredos ocultos.',
+    heroDesc: 'Explore nosso acervo curado sob medida com thrillers de tirar o fôlego, suspense forense e mistérios profundos do Guigotoverso. Relatórios integrados prontos para Google Sheets!',
+    heroCta: 'Investigar Catálogo 🔍'
+  },
+  'dark-romance': {
+    id: 'dark-romance',
+    name: 'Dark Romance',
+    tagline: 'Atrações Proibidas & Obsessões',
+    accentColor: 'text-purple-400',
+    hoverAccentColor: 'hover:text-purple-300',
+    accentBg: 'bg-purple-900',
+    hoverAccentBg: 'hover:bg-purple-800',
+    accentBorder: 'border-purple-900',
+    accentBorderLight: 'border-[#A855F7]/30',
+    primaryGrad: 'from-[#08020D] via-[#0E1015] to-[#080312]',
+    headerLogoBg: 'bg-purple-950/80 text-purple-400 border-purple-500/30',
+    logoSymbol: '🍷',
+    logoText: 'text-purple-400',
+    badgeStyle: 'bg-purple-950/60 text-purple-400 border-purple-900/40',
+    buttonColor: 'bg-[#581C87] hover:bg-[#6b21a8] text-[#F3E8FF]',
+    quote: '"Onde o amor colide com o proibido, e as obsessões tornam-se lei..."',
+    featuresTitle: 'CONTOS PROIBIDOS',
+    heroTitle: 'Linhas perigosas e desejos secretos que ',
+    heroHighlight: 'sequestram todos os sentidos.',
+    heroDesc: 'Bem-vindo ao lado obscuro do amor no Guigotoverso. Enredos envolventes, sentimentos implacáveis e mistérios de ficção que cativam do começo ao fim.',
+    heroCta: 'Explorar Obscuro 🍷'
+  },
+  'clean-romance': {
+    id: 'clean-romance',
+    name: 'Romance Clean',
+    tagline: 'Histórias Apaixonantes & Leves',
+    accentColor: 'text-emerald-400',
+    hoverAccentColor: 'hover:text-emerald-300',
+    accentBg: 'bg-emerald-800',
+    hoverAccentBg: 'hover:bg-emerald-700',
+    accentBorder: 'border-emerald-950',
+    accentBorderLight: 'border-[#34D399]/30',
+    primaryGrad: 'from-[#01140A]/40 via-[#0E1015] to-[#010D07]',
+    headerLogoBg: 'bg-emerald-950/80 text-emerald-400 border-emerald-500/30',
+    logoSymbol: '🌿',
+    logoText: 'text-emerald-400',
+    badgeStyle: 'bg-emerald-950/60 text-emerald-400 border-emerald-900/40',
+    buttonColor: 'bg-emerald-800 hover:bg-emerald-700 text-white',
+    quote: '"A doçura de conexões sutis e sentimentos sinceros que aquecem a alma."',
+    featuresTitle: 'PÁGINAS AFETUOSAS',
+    heroTitle: 'Histórias puras, de amor sincero e ',
+    heroHighlight: 'conexões que aquecem o peito.',
+    heroDesc: 'Sinta o aconchego de romances cativantes e puros do Guigotoverso. Diálogos emocionantes, sentimentos sinceros e finais inesquecíveis.',
+    heroCta: 'Ler Textos Genuínos 🌿'
+  },
+  'rom-com': {
+    id: 'rom-com',
+    name: 'Comédia Romântica',
+    tagline: 'Risadas, Clichês & Destino',
+    accentColor: 'text-amber-400',
+    hoverAccentColor: 'hover:text-amber-300',
+    accentBg: 'bg-amber-600',
+    hoverAccentBg: 'hover:bg-amber-500',
+    accentBorder: 'border-amber-900',
+    accentBorderLight: 'border-[#F59E0B]/30',
+    primaryGrad: 'from-[#120B00]/40 via-[#0E1015] to-[#0A0600]',
+    headerLogoBg: 'bg-amber-950/50 text-amber-400 border-amber-500/30',
+    logoSymbol: '🍿',
+    logoText: 'text-amber-400',
+    badgeStyle: 'bg-amber-950/60 text-amber-400 border-amber-900/40',
+    buttonColor: 'bg-amber-700 hover:bg-amber-600 text-white',
+    quote: '"Disparates engraçados, beijos inesperados e piadas no meio do romance."',
+    featuresTitle: 'ENCONTROS COLORIDOS',
+    heroTitle: 'Desencontros rústicos, risadas leves e ',
+    heroHighlight: 'destinos trapaceados de forma lúdica.',
+    heroDesc: 'O amor é divertido e rir é o melhor começo! Divirta-se com os clichês mais fofos e desajeitados do Guigotoverso, criados com pura leveza.',
+    heroCta: 'Rir & Se Apaixonar 🍿'
+  }
+} as const;
+
 export default function App() {
   // Persistence with LocalStorage
   const [books, setBooks] = useState<Book[]>(() => {
@@ -22,6 +117,32 @@ export default function App() {
       return INITIAL_BOOKS;
     }
   });
+
+  const [currentVibe, setCurrentVibe] = useState<'suspense' | 'dark-romance' | 'clean-romance' | 'rom-com'>(() => {
+    try {
+      const saved = localStorage.getItem('guigotoverso_vibe');
+      if (saved && ['suspense', 'dark-romance', 'clean-romance', 'rom-com'].includes(saved)) {
+        return saved as any;
+      }
+      const vibes = ['suspense', 'dark-romance', 'clean-romance', 'rom-com'];
+      return vibes[Math.floor(Math.random() * vibes.length)] as any;
+    } catch (e) {
+      return 'suspense';
+    }
+  });
+
+  const changeVibe = (newVibe: 'suspense' | 'dark-romance' | 'clean-romance' | 'rom-com') => {
+    setCurrentVibe(newVibe);
+    localStorage.setItem('guigotoverso_vibe', newVibe);
+    triggerNotification(`🌌 Sintonizado no Modo: ${VIBES[newVibe].name}!`);
+  };
+
+  const handleSurpriseVibe = () => {
+    const list: ('suspense' | 'dark-romance' | 'clean-romance' | 'rom-com')[] = ['suspense', 'dark-romance', 'clean-romance', 'rom-com'];
+    const filtered = list.filter(v => v !== currentVibe);
+    const random = filtered[Math.floor(Math.random() * filtered.length)];
+    changeVibe(random);
+  };
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -76,10 +197,10 @@ export default function App() {
         {
           id: '1',
           userName: 'Investigadora Beatriz',
-          question: 'Como as obras do acervo Dossiê Psique são seladas confidencialmente?',
+          question: 'Como as obras do acervo Guigotoverso são seladas confidencialmente?',
           date: '25/05/2026',
           replied: true,
-          replyText: 'Cada exemplar é acondicionado sob sigilo absoluto em envelope Kraft rígido anti-impacto, lacrado com fita fosca e carimbo de cera, sem elementos externos que exponham seu teor investigativo ou de crime.'
+          replyText: 'Cada exemplar é acondicionado sob sigilo absoluto em envelope personalizado de alta segurança ou embalagens especiais de acordo com o gênero de leitura escolhido, sem elementos externos que exponham seu teor.'
         },
         {
           id: '2',
@@ -828,20 +949,21 @@ export default function App() {
       )}
 
       {/* Main Header / Navigation bar */}
-      <header className="sticky top-0 z-40 bg-[#12131C]/90 backdrop-blur-md border-b border-[#242735] py-4 px-4 sm:px-12">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#12131C]/95 backdrop-blur-md border-b border-[#242735]/80 py-4 px-4 sm:px-12 transition-all">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row gap-4 items-center justify-between">
           
           {/* Charming Logo Brand */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setCurrentView('home'); setSelectedBookForPage(null); }}>
-            <div className="w-9 h-9 rounded-xl bg-red-900 text-white flex items-center justify-center font-serif font-black shadow-md border border-red-950">
-              Ψ
+          <div className="flex items-center gap-3 cursor-pointer select-none group" onClick={() => { setCurrentView('home'); setSelectedBookForPage(null); }}>
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-serif text-lg font-black shadow-lg border transition-all ${VIBES[currentVibe].headerLogoBg} group-hover:scale-105 active:scale-95`}>
+              {VIBES[currentVibe].logoSymbol}
             </div>
             <div className="text-left">
-              <h1 className="font-serif font-extrabold text-[#F1F5F9] text-base sm:text-lg leading-none tracking-tight">
-                Dossiê Psique
+              <h1 className="font-serif font-black text-white text-base sm:text-lg leading-none tracking-tight flex items-center gap-1.5">
+                Guigotoverso
+                <span className="text-[8px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-white/50 uppercase tracking-widest font-normal">MUTÁVEL</span>
               </h1>
-              <span className="text-[9px] font-mono tracking-widest font-semibold text-red-500 uppercase block mt-1">
-                Romance Psicológico & Suspense
+              <span className={`text-[9px] font-mono tracking-widest font-bold ${VIBES[currentVibe].accentColor} uppercase block mt-1 transition-all`}>
+                {VIBES[currentVibe].tagline}
               </span>
             </div>
           </div>
@@ -850,34 +972,69 @@ export default function App() {
           <nav className="hidden md:flex items-center gap-6">
             <button 
               onClick={() => { setCurrentView('home'); setSelectedBookForPage(null); }}
-              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'home' ? 'text-red-500 border-b-2 border-red-500 pb-1' : 'text-slate-400 hover:text-white pb-1'}`}
+              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'home' ? `${VIBES[currentVibe].accentColor} border-b-2 ${VIBES[currentVibe].accentBorder} pb-1` : 'text-slate-400 hover:text-white pb-1'}`}
             >
               Início
             </button>
             <button 
               onClick={() => { setCurrentView('catalog'); setSelectedBookForPage(null); }}
-              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'catalog' ? 'text-red-500 border-b-2 border-red-500 pb-1' : 'text-slate-400 hover:text-white pb-1'}`}
+              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'catalog' ? `${VIBES[currentVibe].accentColor} border-b-2 ${VIBES[currentVibe].accentBorder} pb-1` : 'text-slate-400 hover:text-white pb-1'}`}
             >
-              Catálogo Exclusivo
+              Catálogo
             </button>
             <button 
               onClick={() => { setCurrentView('faq'); setSelectedBookForPage(null); }}
-              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'faq' ? 'text-red-500 border-b-2 border-red-500 pb-1' : 'text-slate-400 hover:text-white pb-1'}`}
+              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono ${currentView === 'faq' ? `${VIBES[currentVibe].accentColor} border-b-2 ${VIBES[currentVibe].accentBorder} pb-1` : 'text-slate-400 hover:text-white pb-1'}`}
             >
               FAQ / Dúvidas
             </button>
             <button 
               onClick={() => { setCurrentView('tracking'); setSelectedBookForPage(null); }}
-              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono flex items-center gap-1.5 ${currentView === 'tracking' ? 'text-red-500 border-b-2 border-red-500 pb-1' : 'text-slate-400 hover:text-white pb-1'}`}
+              className={`text-xs font-bold uppercase tracking-wider cursor-pointer font-mono flex items-center gap-1.5 ${currentView === 'tracking' ? `${VIBES[currentVibe].accentColor} border-b-2 ${VIBES[currentVibe].accentBorder} pb-1` : 'text-slate-400 hover:text-white pb-1'}`}
             >
               <LucideIcon name="User" size={13} />
-              <span>{currentUser ? (currentUser.role === 'admin' ? '👤 Admin' : `👤 ${currentUser.name}`) : 'Entrar / Rastrear'}</span>
+              <span>{currentUser ? (currentUser.role === 'admin' ? '👤 Admin' : `👤 ${currentUser.name}`) : 'Entrar / Registrar'}</span>
             </button>
           </nav>
 
           {/* Shopping bag count details */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Sintonizador do Guigotoverso: Interactive, Surprise & Mood Tuner */}
+            <div className="flex items-center gap-1 bg-[#181922] p-1 rounded-xl border border-[#242735] text-xs font-mono">
+              <span className="text-[9px] pl-2 pr-1 text-slate-500 font-extrabold uppercase hidden xl:inline">Multivibe:</span>
+              {(['suspense', 'dark-romance', 'clean-romance', 'rom-com'] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => changeVibe(v)}
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer relative group ${
+                    currentVibe === v 
+                      ? 'bg-zinc-800 border border-zinc-700 text-white shadow-inner scale-105' 
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                  title={VIBES[v].name}
+                >
+                  <span className="text-sm select-none">{VIBES[v].logoSymbol}</span>
+                  {/* Beautiful Dynamic Tooltip styling */}
+                  <span className="absolute bottom-[-32px] left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all bg-black/95 text-slate-100 text-[9px] px-2 py-1 rounded border border-zinc-800 whitespace-nowrap z-50 pointer-events-none font-bold shadow-2xl">
+                    {VIBES[v].name}
+                  </span>
+                </button>
+              ))}
+              
+              {/* Mutual Surprise Random button */}
+              <button
+                onClick={handleSurpriseVibe}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-rose-400 hover:text-rose-300 cursor-pointer relative group transition-transform active:rotate-180"
+                title="Sintonizar Aleatório / Surpresa Cósmica!"
+              >
+                <LucideIcon name="Sparkles" size={12} className="animate-pulse" />
+                <span className="absolute bottom-[-32px] left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all bg-black/95 text-rose-300 text-[9px] px-2 py-1 rounded border border-zinc-800 whitespace-nowrap z-50 pointer-events-none font-bold shadow-2xl">
+                  Surpresa Cósmica 🌌
+                </span>
+              </button>
+            </div>
+
             {/* Toggle switch for Admin in small mobile resolutions */}
             <button
               onClick={() => {
@@ -894,17 +1051,17 @@ export default function App() {
             {/* Shopping Cart Trigger */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2 rounded-xl bg-red-950/25 hover:bg-red-950/40 border border-[#2D303D] transition-colors cursor-pointer flex items-center gap-2 px-3 py-2"
+              className="relative p-2 rounded-xl bg-red-950/25 hover:bg-red-950/40 border border-[#2D303D] transition-colors cursor-pointer flex items-center gap-2 px-3 py-2 animate-fade-in"
               title="Abrir sacola de compras"
             >
-              <LucideIcon name="ShoppingBag" className="text-red-400" size={18} />
+              <LucideIcon name="ShoppingBag" className={VIBES[currentVibe].accentColor} size={18} />
               <div className="text-left leading-none">
-                <span className="text-[9px] font-mono text-slate-400 block select-none uppercase font-bold">Dossiê</span>
+                <span className="text-[9px] font-mono text-slate-400 block select-none uppercase font-bold">SACOLA</span>
                 <span className="text-xs font-serif font-bold text-slate-200">R$ {cartSubtotal.toFixed(2)}</span>
               </div>
 
               {totalCartItems > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-[#EF4444] text-white min-w-5 h-5 rounded-full text-[10px] font-mono flex items-center justify-center font-bold px-1 animate-pulse border border-zinc-950">
+                <span className={`absolute -top-1.5 -right-1.5 ${VIBES[currentVibe].accentBg} text-white min-w-5 h-5 rounded-full text-[10px] font-mono flex items-center justify-center font-bold px-1 animate-pulse border border-zinc-950`}>
                   {totalCartItems}
                 </span>
               )}
@@ -1000,33 +1157,33 @@ export default function App() {
                 
                 {/* Left Content Column */}
                 <div className="lg:col-span-7 space-y-6">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/30 text-red-400 text-xs font-bold uppercase tracking-wider border border-red-900/20">
-                    <span>🕵️‍♂️</span>
-                    <span>Dossiês de Romance Psicológico & Suspense</span>
-                    <span>🕵️‍♂️</span>
+                  <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${VIBES[currentVibe].badgeStyle} text-xs font-bold uppercase tracking-wider border transition-all duration-300`}>
+                    <span>{VIBES[currentVibe].logoSymbol}</span>
+                    <span>{VIBES[currentVibe].featuresTitle} • MULTIVERSO</span>
+                    <span>{VIBES[currentVibe].logoSymbol}</span>
                   </div>
 
-                  <h2 className="text-4xl sm:text-6xl font-serif font-black text-slate-100 tracking-tight leading-[1.08]">
-                    Entre na mente de personagens e <span className="text-red-500 block sm:inline font-serif italic font-normal">desvende segredos ocultos.</span>
+                  <h2 className="text-4xl sm:text-6xl font-serif font-black text-slate-100 tracking-tight leading-[1.08] transition-all duration-300">
+                    {VIBES[currentVibe].heroTitle} <span className={`${VIBES[currentVibe].accentColor} block sm:inline font-serif italic font-normal`}>{VIBES[currentVibe].heroHighlight}</span>
                   </h2>
 
-                  <p className="text-slate-300 text-sm sm:text-lg max-w-xl leading-relaxed font-sans mx-auto lg:mx-0">
-                    Explore nosso acervo curado sob medida com thrillers envolventes, suspense forense e dark romances obsessionais. Adicione faturas estruturadas diretamente para download integrado e exportação ao Google Sheets!
+                  <p className="text-slate-300 text-sm sm:text-lg max-w-xl leading-relaxed font-sans mx-auto lg:mx-0 transition-all duration-300">
+                    {VIBES[currentVibe].heroDesc}
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                     <button
                       onClick={() => { setCurrentView('catalog'); window.scrollTo(0,0); }}
-                      className="button-magic-primary px-8 py-4 text-xs font-semibold sm:text-sm tracking-wider shadow-lg bg-[#EF4444] hover:bg-red-700 hover:border-red-600 text-white rounded-lg cursor-pointer font-mono uppercase"
+                      className={`px-8 py-4 text-xs font-semibold sm:text-sm tracking-wider shadow-lg ${VIBES[currentVibe].buttonColor} rounded-lg cursor-pointer font-mono uppercase transition-all duration-300 active:scale-95`}
                     >
-                      <span>Investigar Catálogo Completo 🔍</span>
+                      <span>{VIBES[currentVibe].heroCta}</span>
                     </button>
                     
                     <button
                       onClick={() => { setCurrentView('faq'); window.scrollTo(0,0); }}
                       className="button-magic-secondary px-8 py-4 text-xs font-semibold sm:text-sm border border-zinc-700 bg-zinc-900/55 hover:bg-zinc-800 hover:text-white text-slate-300 rounded-lg cursor-pointer"
                     >
-                      <span>Vozes Unidas: FAQ Operacional</span>
+                      <span>FAQ & Dúvidas Operacionais</span>
                     </button>
                   </div>
 
@@ -1082,12 +1239,12 @@ export default function App() {
             {/* Clean call to action to visit catalog */}
             <section className="py-16 bg-[#12131A] border-t border-[#2D303D] text-center text-slate-100">
               <div className="max-w-xl mx-auto px-4">
-                <span className="text-[10px] uppercase font-mono tracking-widest text-[#EF4444] font-black">Investigue as Evidências</span>
-                <h3 className="text-2xl sm:text-3xl font-serif font-black text-slate-100 mt-2">Dossiê Completo de Crime & Mistério</h3>
-                <p className="text-xs sm:text-sm text-slate-400 font-sans mt-3">Subimos novos lançamentos psicossociais e analisadores de comportamento sob custódia seleta. O catálogo exclusivo está focado unicamente no acervo livre de poluição visual.</p>
+                <span className={`text-[10px] uppercase font-mono tracking-widest ${VIBES[currentVibe].accentColor} font-black transition-all duration-300`}>Acesse o Multiverso</span>
+                <h3 className="text-2xl sm:text-3xl font-serif font-black text-slate-100 mt-2 transition-all duration-300">{VIBES[currentVibe].featuresTitle} NO GUIGOTOVERSO</h3>
+                <p className="text-xs sm:text-sm text-slate-400 font-sans mt-3 transition-all duration-300">Navegue pelas melhores seleções de suspense leve ou profundo, dramas irresistíveis e comédias leves sem poluição visual.</p>
                 <button
                   onClick={() => { setCurrentView('catalog'); window.scrollTo(0,0); }}
-                  className="mt-6 px-6 py-3 bg-[#EF4444] hover:bg-red-700 text-white font-mono text-xs uppercase font-bold tracking-wider rounded-lg transition-all shadow-md hover:-translate-y-0.5 cursor-pointer"
+                  className={`mt-6 px-6 py-3 ${VIBES[currentVibe].buttonColor} font-mono text-xs uppercase font-bold tracking-wider rounded-lg transition-all shadow-md hover:-translate-y-0.5 cursor-pointer`}
                 >
                   Abrir Páginas do Catálogo 📕
                 </button>
@@ -1391,21 +1548,21 @@ export default function App() {
                     {(currentUser.role === 'admin' ? orders : orders.filter(o => o.customerName.toLowerCase() === currentUser.name.toLowerCase())).length === 0 ? (
                       <div className="text-center py-16">
                         <span className="text-4xl block mb-2">👁️</span>
-                        <p className="text-xs text-slate-400 font-sans max-w-sm mx-auto leading-relaxed text-center">Nenhum dossiê de faturamento associado neste terminal ainda. Adicione livros à sacola, finalize a compra e acompanhe seu rastreio aqui em tempo real!</p>
-                        <button onClick={() => setCurrentView('catalog')} className="mt-4 text-xs font-mono font-bold uppercase text-[#EF4444] hover:underline">Abrir Catálogo</button>
+                        <p className="text-xs text-slate-400 font-sans max-w-sm mx-auto leading-relaxed text-center">Nenhum pedido de faturamento associado neste terminal ainda. Adicione livros à sacola, finalize a compra e acompanhe seu rastreio aqui em tempo real!</p>
+                        <button onClick={() => setCurrentView('catalog')} className={`mt-4 text-xs font-mono font-bold uppercase ${VIBES[currentVibe].accentColor} hover:underline`}>Abrir Catálogo</button>
                       </div>
                     ) : (
                       <div className="space-y-6">
                         {(currentUser.role === 'admin' ? orders : orders.filter(o => o.customerName.toLowerCase() === currentUser.name.toLowerCase())).map((ord) => {
                           const stages = [
-                            { name: '🔬 Avaliando Evidências', statusKey: 'Avaliando Evidências' },
-                            { name: '📦 Lacre Kraft Preparado', statusKey: 'Preparando Lacre Kraft' },
-                            { name: '✉️ Despachado em Sigilo', statusKey: 'Despachado em Sigilo' },
-                            { name: '🏠 Dossiê Entregue', statusKey: 'Entregue' }
+                            { name: '🔬 Processando Pedido', statusKey: 'Avaliando Evidências' },
+                            { name: '📦 Embalagem Preparada', statusKey: 'Preparando Lacre Kraft' },
+                            { name: '✉️ Despachado de Forma Segura', statusKey: 'Despachado em Sigilo' },
+                            { name: '🏠 Pedido Entregue', statusKey: 'Entregue' }
                           ];
                           
                           const activeIndex = stages.findIndex(s => s.statusKey === ord.status);
-
+ 
                           return (
                             <div key={ord.id} className="p-5 bg-black/40 border border-zinc-850 rounded-2xl relative overflow-hidden">
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-800 pb-3 mb-4">
@@ -1422,17 +1579,17 @@ export default function App() {
                                   <span className="text-xs text-slate-100 font-bold font-sans">{ord.customerName} (CEP: {ord.cep})</span>
                                 </div>
                               </div>
-
+ 
                               <div className="text-xs text-slate-300 font-sans mb-4 text-left">
-                                <span className="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px] font-mono">Livros no Dossiê:</span>
+                                <span className="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px] font-mono">Livros Adquiridos:</span>
                                 <p className="leading-relaxed text-slate-200">
                                   {ord.items.map(it => `${it.quantity}x "${it.title}"`).join('; ')}
                                 </p>
                               </div>
-
+ 
                               {/* Progress Track visual status */}
                               <div className="mt-5 bg-zinc-950/40 p-4 rounded-xl border border-zinc-800">
-                                <span className="text-[10px] font-mono text-slate-400 block mb-3 uppercase tracking-wider font-bold">Progresso das Evidências (Siga as Fases):</span>
+                                <span className="text-[10px] font-mono text-slate-400 block mb-3 uppercase tracking-wider font-bold">Acompanhamento de Envio (Fases):</span>
                                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-center">
                                   {stages.map((st, idx) => {
                                     const isCompleted = idx <= activeIndex;
@@ -1697,7 +1854,7 @@ export default function App() {
 
                 <div className="text-center pt-4 border-t border-zinc-900 mt-6 animate-pulse">
                   <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
-                    Nenhum dado é compartilhado publicamente. Operações seguras sob curadoria privada e inviolável do Dossiê Psique.
+                    Nenhum dado é compartilhado publicamente. Operações seguras sob curadoria privada e inviolável do Guigotoverso.
                   </p>
                 </div>
               </div>
@@ -2138,10 +2295,10 @@ export default function App() {
                         handleAddToCart(selectedBookForPage);
                         triggerNotification(`"${selectedBookForPage.title}" adicionado à sua sacola.`);
                       }}
-                      className="flex-grow sm:flex-grow-0 px-8 py-3.5 bg-[#EF4444] hover:bg-red-750 hover:border-red-600 rounded-xl text-white font-mono uppercase font-black text-xs tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all active:translate-y-0.5 cursor-pointer"
+                      className={`flex-grow sm:flex-grow-0 px-8 py-3.5 ${VIBES[currentVibe].buttonColor} rounded-xl font-mono uppercase font-black text-xs tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all active:translate-y-0.5 cursor-pointer`}
                     >
                       <LucideIcon name="ShoppingBag" size={15} />
-                      <span>Adicionar ao Dossiê (Comprar)</span>
+                      <span>Adicionar à Sacola</span>
                     </button>
                     <button
                       onClick={() => {
@@ -2269,23 +2426,25 @@ export default function App() {
       </main>
 
       {/* Footer styled as a dark magical tome */}
-      <footer className="mt-auto relative z-10 bg-[#0B0C10] border-t-4 border-red-950 text-slate-400 py-12 px-6 sm:px-12">
+      <footer className={`mt-auto relative z-10 bg-[#0B0C10] border-t-4 transition-all duration-300 ${VIBES[currentVibe].accentBorder} text-slate-400 py-12 px-6 sm:px-12`}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
           
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-14 text-center md:text-left">
             <div>
-              <h4 className="font-serif font-black text-white text-base">Dossiê Psique • Livraria</h4>
-              <p className="text-xxs font-mono text-red-500 tracking-wider mt-1 uppercase">Livros Psicossociais & Dark Romance • Desde 2026</p>
-              <p className="text-xs text-slate-400 mt-2.5 max-w-xs font-serif italic leading-relaxed">
-                "Não há tormento de terra que resista ao aconchego das páginas e as lendas de uma boa pena."
+              <h4 className="font-serif font-black text-white text-base">Guigotoverso • Multiverso Literário</h4>
+              <p className={`text-xxs font-mono ${VIBES[currentVibe].accentColor} tracking-wider mt-1 uppercase transition-all`}>
+                Gêneros Mutáveis & Leituras Surpreendentes • Desde 2026
+              </p>
+              <p className="text-xs text-slate-400 mt-2.5 max-w-sm font-serif italic leading-relaxed transition-all">
+                {VIBES[currentVibe].quote}
               </p>
             </div>
-
+ 
             {/* Links lists */}
             <div className="flex flex-wrap justify-center gap-6 text-xs font-semibold font-mono">
               <div className="flex items-center gap-2">
-                <LucideIcon name="ShieldCheck" size={14} className="text-[#EF4444]" />
-                <span>Custódia Discreta</span>
+                <LucideIcon name="ShieldCheck" size={14} className={VIBES[currentVibe].accentColor} />
+                <span>Custódia Integrada</span>
               </div>
               <div className="flex items-center gap-2">
                 <LucideIcon name="Layers" size={14} className="text-[#34D399]" />
@@ -2297,12 +2456,12 @@ export default function App() {
               </div>
             </div>
           </div>
-
+ 
           <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
-            <span className="text-[10px] font-mono tracking-wider font-bold text-slate-300">FEITO PARA MENTES CURIOSAS</span>
-            <span className="text-[11px] text-slate-500">© 2026 Dossiê Psique. Todos os direitos de autor reservados à investigação.</span>
+            <span className="text-[10px] font-mono tracking-wider font-bold text-slate-300">EXPLORE TODOS OS GÊNEROS</span>
+            <span className="text-[11px] text-slate-500">© 2026 Guigotoverso. Todos os direitos de autor reservados à escrita de guigoto monteiro.</span>
           </div>
-
+ 
         </div>
       </footer>
 
@@ -2323,13 +2482,13 @@ export default function App() {
               <div className="pointer-events-auto w-screen max-w-md slide-in-right bg-[#12131A] border-l border-zinc-800 shadow-2xl flex flex-col justify-between relative text-slate-100">
                 
                 {/* Book edge gold trim decor */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-800 via-red-600 to-red-950" />
+                <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${currentVibe === 'suspense' ? 'from-red-900 via-red-650' : currentVibe === 'dark-romance' ? 'from-purple-900 via-purple-650' : currentVibe === 'clean-romance' ? 'from-emerald-900 via-emerald-650' : 'from-amber-800 via-amber-550'} to-zinc-950`} />
 
                 {/* Header of Cart drawer */}
                 <div className="px-5 py-5 bg-[#1C1E26] border-b border-zinc-800 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <LucideIcon name="ShoppingBag" className="text-red-500" size={18} />
-                    <h3 className="font-serif font-black text-slate-100 text-base sm:text-lg">Dossiê de Compras</h3>
+                    <LucideIcon name="ShoppingBag" className={VIBES[currentVibe].accentColor} size={18} />
+                    <h3 className="font-serif font-black text-slate-100 text-base sm:text-lg">Sacola de Leitura</h3>
                   </div>
 
                   <button
