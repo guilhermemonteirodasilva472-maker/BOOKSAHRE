@@ -7,6 +7,7 @@ interface ThreeDLaunchBookProps {
   onAddToCart: (book: Book) => void;
   onOpenBookDetails?: (book: Book) => void;
   onOpenAuthorDetail?: () => void;
+  book?: Book;
 }
 
 export const LAUNCH_BOOK: Book = {
@@ -33,13 +34,13 @@ export const LAUNCH_BOOK: Book = {
   createdAt: new Date().toISOString()
 };
 
-export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpenAuthorDetail }: ThreeDLaunchBookProps) {
+export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpenAuthorDetail, book = LAUNCH_BOOK }: ThreeDLaunchBookProps) {
   const [copied, setCopied] = useState(false);
-  const discountPrice = LAUNCH_BOOK.price * (1 - (LAUNCH_BOOK.discount || 0) / 100);
+  const discountPrice = book.price * (1 - (book.discount || 0) / 100);
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(`Destaque Literário: ${LAUNCH_BOOK.title} por apenas R$ ${discountPrice.toFixed(2)} no Dossiê Psique!`);
+    navigator.clipboard.writeText(`Destaque Literário: ${book.title} por apenas R$ ${discountPrice.toFixed(2)} no Dossiê Psique!`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -66,7 +67,7 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
           </div>
 
           <h3 className="text-2xl sm:text-3xl font-serif font-black text-slate-100 leading-tight">
-            {LAUNCH_BOOK.title}
+            {book.title}
           </h3>
 
           <p className="text-slate-400 text-xs font-mono">
@@ -74,19 +75,19 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
               onClick={() => onOpenAuthorDetail && onOpenAuthorDetail()}
               className="font-serif font-bold text-red-500 hover:text-red-400 underline cursor-pointer transition-colors"
             >
-              {LAUNCH_BOOK.author}
+              {book.author}
             </button>
           </p>
 
           <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-sans font-normal">
-            {LAUNCH_BOOK.description}
+            {book.description}
           </p>
 
           {/* Pricing Box */}
           <div className="flex items-center gap-3 bg-[#111218]/90 p-3.5 rounded-xl border border-[#2C2E3A] max-w-sm">
             <div className="relative">
               <span className="text-[10px] font-mono uppercase text-slate-500 block line-through">
-                R$ {LAUNCH_BOOK.price.toFixed(2)}
+                R$ {book.price.toFixed(2)}
               </span>
               <span className="text-xl font-bold font-mono text-slate-100">
                 R$ {discountPrice.toFixed(2)}
@@ -94,14 +95,14 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
             </div>
             
             <div className="bg-[#991B1B] text-red-50 text-[10px] font-bold px-2 py-1 font-mono rounded border border-red-700 shrink-0 uppercase tracking-wide">
-              {LAUNCH_BOOK.discount}% DESCONTO
+              {book.discount}% DESCONTO
             </div>
           </div>
 
           {/* Buttons actions */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
-              onClick={() => onAddToCart(LAUNCH_BOOK)}
+              onClick={() => onAddToCart(book)}
               className="button-magic-primary text-xs py-3.5 px-6 rounded-full flex items-center gap-2 shadow-lg"
               id="btn-add-launch-book"
             >
@@ -110,7 +111,7 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
             </button>
 
             <button
-              onClick={() => onOpenBookDetails && onOpenBookDetails(LAUNCH_BOOK)}
+              onClick={() => onOpenBookDetails && onOpenBookDetails(book)}
               className="button-magic-secondary text-xs py-3 px-4 rounded-full flex items-center gap-1.5"
             >
               <LucideIcon name="Search" size={13} />
@@ -130,7 +131,7 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
         {/* Right Side: The 3D Book Container */}
         <div className="md:col-span-5 flex justify-center py-6">
           <div 
-            onClick={() => onOpenBookDetails && onOpenBookDetails(LAUNCH_BOOK)}
+            onClick={() => onOpenBookDetails && onOpenBookDetails(book)}
             className="three-d-book-container cursor-pointer select-none"
             title="Investigar capa em 3D de lançamento!"
           >
@@ -140,7 +141,7 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
               <div 
                 className="three-d-book-cover-back"
                 style={{
-                  background: `linear-gradient(225deg, ${LAUNCH_BOOK.coverStyle.gradientEnd}, ${LAUNCH_BOOK.coverStyle.gradientStart})`
+                  background: `linear-gradient(225deg, ${book.coverStyle.gradientEnd}, ${book.coverStyle.gradientStart})`
                 }}
               />
               
@@ -151,7 +152,7 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
               <div 
                 className="three-d-book-spine"
                 style={{
-                  background: `linear-gradient(to bottom, ${LAUNCH_BOOK.coverStyle.gradientStart}, ${LAUNCH_BOOK.coverStyle.gradientEnd})`
+                  background: `linear-gradient(to bottom, ${book.coverStyle.gradientStart}, ${book.coverStyle.gradientEnd})`
                 }}
               >
                 <div className="w-full h-full opacity-35 bg-repeat-y bg-cover" style={{ backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.5) 100%)` }} />
@@ -161,17 +162,23 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
               <div 
                 className="three-d-book-cover-front p-4 flex flex-col justify-between"
                 style={{
-                  background: `linear-gradient(135deg, ${LAUNCH_BOOK.coverStyle.gradientStart}, ${LAUNCH_BOOK.coverStyle.gradientEnd})`,
-                  color: LAUNCH_BOOK.coverStyle.textColor
+                  background: book.coverImage 
+                    ? 'none' 
+                    : `linear-gradient(135deg, ${book.coverStyle.gradientStart}, ${book.coverStyle.gradientEnd})`,
+                  color: book.coverStyle.textColor
                 }}
               >
+                {book.coverImage && (
+                  <img src={book.coverImage} className="absolute inset-0 w-full h-full object-cover rounded-xl" alt={book.title} referrerPolicy="no-referrer" />
+                )}
+
                 {/* Embedded Spine Highlight inside cover */}
                 <div className="absolute top-0 left-0 bottom-0 w-2.5 bg-gradient-to-r from-black/25 to-transparent z-10" />
 
                 {/* Cover Header Badge */}
                 <div className="flex justify-between items-start z-10">
                   <span className="text-[7.5px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-black/40 border border-white/10 text-red-400">
-                    {LAUNCH_BOOK.category}
+                    {book.category}
                   </span>
                   <div className="text-red-500">
                     <LucideIcon name="Eye" size={12} className="animate-pulse" />
@@ -181,22 +188,22 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpe
                 {/* Central Illustration Area with glowing stamp */}
                 <div className="my-auto py-2 flex flex-col items-center justify-center relative z-10">
                   <div className="w-12 h-12 rounded-full bg-black/40 border border-white/10 flex items-center justify-center mb-2.5 shadow-inner">
-                    <LucideIcon name={LAUNCH_BOOK.coverStyle.iconName} size={22} className="text-red-500 animate-pulse" />
+                    <LucideIcon name={book.coverStyle.iconName} size={22} className="text-red-500 animate-pulse" />
                   </div>
                   
                   <h4 className="font-serif font-black text-center text-xs sm:text-xs leading-snug tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] max-h-12 overflow-hidden line-clamp-3">
-                    {LAUNCH_BOOK.title}
+                    {book.title}
                   </h4>
                   
                   <p className="text-[8px] mt-1 font-mono opacity-80 uppercase tracking-widest text-center line-clamp-1">
-                    {LAUNCH_BOOK.author}
+                    {book.author}
                   </p>
                 </div>
 
                 {/* Footer seal */}
                 <div className="flex justify-between items-center text-[7px] font-mono border-t border-white/15 pt-1.5 z-10">
                   <span className="opacity-70">DOSSIÊ IMPORTADO</span>
-                  <span className="text-red-400 font-bold">25% OFF</span>
+                  <span className="text-red-400 font-bold">{book.discount || 0}% OFF</span>
                 </div>
 
                 {/* Dynamic bookmark ribbon in 3D */}

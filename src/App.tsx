@@ -37,12 +37,22 @@ export default function App() {
   const [selectedBookForPage, setSelectedBookForPage] = useState<Book | null>(null);
 
   // Authentication State
+  const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
   const [currentUser, setCurrentUser] = useState<{ name: string; role: 'admin' | 'user' } | null>(() => {
     try {
       const saved = localStorage.getItem('forense_bookstore_user');
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
       return null;
+    }
+  });
+
+  const [registeredUsers, setRegisteredUsers] = useState<{ username: string; passwordHash: string; role: 'user' | 'admin' }[]>(() => {
+    try {
+      const saved = localStorage.getItem('forense_registered_accounts');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
     }
   });
 
@@ -170,6 +180,12 @@ export default function App() {
       }
     } catch (e) {}
   }, [currentUser]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('forense_registered_accounts', JSON.stringify(registeredUsers));
+    } catch (e) {}
+  }, [registeredUsers]);
 
   // Toast utilities
   const triggerNotification = (message: string) => {
@@ -1037,11 +1053,17 @@ export default function App() {
 
                 {/* Right Column: 3D interactive launching book side-attached */}
                 <div id="launch-book-container" className="lg:col-span-5 w-full flex justify-center">
-                  <ThreeDLaunchBook 
-                    onAddToCart={handleAddToCart} 
-                    onOpenBookDetails={(book) => { setSelectedBookForPage(book); setCurrentView('book-detail'); window.scrollTo(0,0); }} 
-                    onOpenAuthorDetail={() => { setCurrentView('author-detail'); window.scrollTo(0, 0); }}
-                  />
+                  {(() => {
+                    const launchBook = books.find(b => b.id === '1') || books.find(b => b.title.toLowerCase().includes('diga seu nome'));
+                    return (
+                      <ThreeDLaunchBook 
+                        book={launchBook}
+                        onAddToCart={handleAddToCart} 
+                        onOpenBookDetails={(book) => { setSelectedBookForPage(book); setCurrentView('book-detail'); window.scrollTo(0,0); }} 
+                        onOpenAuthorDetail={() => { setCurrentView('author-detail'); window.scrollTo(0, 0); }}
+                      />
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -1467,77 +1489,217 @@ export default function App() {
 
               </div>
             ) : (
-              // Logged out: Multi-Tab elegant login form!
-              <div className="bg-[#12131A] border border-[#2D303D] max-w-xl mx-auto rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-                <div className="text-center mb-8">
+              // Logged out: Multi-Tab elegant login and register form!
+              <div className="bg-[#12131A] border-2 border-[#2C2E3A] max-w-xl mx-auto rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden animate-fade-in">
+                
+                {/* Visual Seal Accent */}
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-900 via-purple-900 to-red-950" />
+
+                <div className="text-center mb-6">
                   <span className="w-12 h-12 rounded-2xl bg-red-950/40 border border-[#EF4444]/30 text-2xl flex items-center justify-center mx-auto mb-4 text-[#EF4444] font-serif font-black">
                     Ψ
                   </span>
                   <h3 className="font-serif font-black text-[#F1F5F9] text-2xl">Acesso Central Literário</h3>
-                  <p className="text-xs text-slate-400 mt-2 font-sans max-w-sm mx-auto">Registre suas credenciais para verificar o andamento do pedido ou assumir privilégios diretivos de administrador.</p>
+                  <p className="text-xs text-slate-400 mt-2 font-sans max-w-sm mx-auto">
+                    Acesse seu dossiê confidencial de pedidos ou registre-se para iniciar novas investigações literárias.
+                  </p>
                 </div>
 
-                {/* Simulated login with standard credentials */}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const fd = new FormData(e.currentTarget);
-                    const userVal = (fd.get('username') as string)?.trim() || 'Leitor Comum';
-                    const passVal = (fd.get('password') as string)?.trim() || '';
-
-                    if (userVal.toLowerCase() === 'admin') {
-                      if (passVal === 'admin') {
-                        const adminUser = { name: 'Comandante Forense', role: 'admin' as const };
-                        setCurrentUser(adminUser);
-                        triggerNotification('🔑 Conexão estabelecida com sucesso! Painel Administrativo Ativado.');
-                      } else {
-                        alert('A senha do administrador é "admin"! Tente novamente ou entre no Acesso Comum removendo o login "admin".');
-                      }
-                    } else {
-                      const clientUser = { name: userVal, role: 'user' as const };
-                      setCurrentUser(clientUser);
-                      triggerNotification(`🕵️‍♂️ Investigador "${userVal}" autenticado! Carregando andamento de pedidos...`);
-                    }
-                  }}
-                  className="space-y-5 text-left"
-                >
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Insira seu Pseudônimo / Nome:</label>
-                    <input 
-                      type="text" 
-                      name="username"
-                      placeholder="Ex: Beatriz ou admin"
-                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#EF4444] font-mono leading-none"
-                      required
-                    />
-                    <p className="text-[10px] text-zinc-500 font-mono">Use seu primeiro nome para criar um perfil livre de rastreio, ou use "admin" para ADM.</p>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Senha Mística (Livre para Usuário):</label>
-                    <input 
-                      type="password" 
-                      name="password"
-                      placeholder="Senha do usuário (ou 'admin' para ADM)"
-                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#EF4444] font-mono leading-none"
-                    />
-                    <div className="bg-[#1C1D24] p-2.5 rounded-lg border border-zinc-800 mt-2 flex items-center justify-between text-[10px] font-mono text-amber-400/85">
-                      <span>🔑 CREDENCIAIS DO ADM EXCLUSIVO:</span>
-                      <strong className="font-extrabold bg-zinc-950 px-2 py-0.5 rounded text-white border border-zinc-800">user: admin | senha: admin</strong>
-                    </div>
-                  </div>
-
+                {/* Double Tabs for Sign In vs Sign Up */}
+                <div className="grid grid-cols-2 gap-2 bg-black/40 p-1 rounded-xl border border-zinc-900 mb-6">
                   <button
-                    type="submit"
-                    className="w-full py-3.5 bg-red-800 hover:bg-red-700 text-white font-mono text-xs uppercase font-extrabold tracking-wider rounded-xl transition-transform active:scale-98 shadow-lg cursor-pointer mt-2"
+                    onClick={() => setAuthTab('login')}
+                    className={`py-2.5 px-3 rounded-lg text-xs font-mono font-bold tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      authTab === 'login'
+                        ? 'bg-red-900/35 border border-red-800/40 text-red-100 font-black shadow-inner'
+                        : 'text-slate-500 hover:text-slate-300'
+                    }`}
                   >
-                    Homologar Credenciais e Acessar
+                    <LucideIcon name="LogIn" size={13} />
+                    <span>Entrar / Acessar</span>
                   </button>
+                  <button
+                    onClick={() => setAuthTab('register')}
+                    className={`py-2.5 px-3 rounded-lg text-xs font-mono font-bold tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      authTab === 'register'
+                        ? 'bg-[#3B0764]/30 border border-[#581C87]/40 text-[#D8B4FE] font-black shadow-inner'
+                        : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                  >
+                    <LucideIcon name="UserPlus" size={13} />
+                    <span>Criar Conta</span>
+                  </button>
+                </div>
 
-                  <div className="text-center pt-2">
-                    <p className="text-[10px] text-slate-500 font-sans">O acesso padrão de comprador é totalmente livre de registros extras. Digite seu nickname e clique no botão acima.</p>
-                  </div>
-                </form>
+                {/* Tab 1: Access (Login) */}
+                {authTab === 'login' ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const fd = new FormData(e.currentTarget);
+                      const userVal = (fd.get('username') as string)?.trim();
+                      const passVal = (fd.get('password') as string)?.trim() || '';
+
+                      if (!userVal) {
+                        alert('Por favor, informe seu nome de usuário.');
+                        return;
+                      }
+
+                      // Check admin backdoor privately (maintained for testing, completely invisible on UI)
+                      if (userVal.toLowerCase() === 'admin') {
+                        if (passVal === 'admin') {
+                          const adminUser = { name: 'Comandante Forense', role: 'admin' as const };
+                          setCurrentUser(adminUser);
+                          triggerNotification('🔑 Conexão estabelecida com sucesso! Painel Administrativo Ativado.');
+                        } else {
+                          alert('Senha incorreta para a conta administradora.');
+                        }
+                        return;
+                      }
+
+                      // Check registered users list
+                      const foundUser = registeredUsers.find(
+                        (u) => u.username.toLowerCase() === userVal.toLowerCase()
+                      );
+
+                      if (foundUser) {
+                        if (foundUser.passwordHash === passVal) {
+                          setCurrentUser({ name: foundUser.username, role: foundUser.role });
+                          triggerNotification(`🕵️‍♂️ Investigador "${foundUser.username}" conectado!`);
+                        } else {
+                          alert('Senha de acesso incorreta para este investigador.');
+                        }
+                      } else {
+                        alert('Investigador não catalogado. Acesse a aba "Criar Conta" acima para registrar suas credenciais.');
+                      }
+                    }}
+                    className="space-y-4 text-left animate-fade-in"
+                  >
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Pseudônimo / Usuário:</label>
+                      <input 
+                        type="text" 
+                        name="username"
+                        placeholder="Ex: Beatriz"
+                        className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#EF4444] font-mono leading-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Senha de Segurança:</label>
+                      <input 
+                        type="password" 
+                        name="password"
+                        placeholder="Insira sua senha"
+                        className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#EF4444] font-mono leading-none"
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3.5 bg-red-800 hover:bg-red-700 text-white font-mono text-xs uppercase font-extrabold tracking-wider rounded-xl transition-transform active:scale-98 shadow-lg cursor-pointer mt-4"
+                    >
+                      Homologar Identidade e Acessar
+                    </button>
+                  </form>
+                ) : (
+                  /* Tab 2: Create Account (Register) */
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const fd = new FormData(e.currentTarget);
+                      const userVal = (fd.get('username') as string)?.trim();
+                      const passVal = (fd.get('password') as string)?.trim();
+                      const confirmVal = (fd.get('confirm_password') as string)?.trim();
+
+                      if (!userVal || !passVal) {
+                        alert('Todos os campos obrigatórios precisam ser preenchidos.');
+                        return;
+                      }
+
+                      if (userVal.toLowerCase() === 'admin') {
+                        alert('Este pseudônimo é reservado para a gerência de custódia.');
+                        return;
+                      }
+
+                      if (passVal !== confirmVal) {
+                        alert('As senhas digitadas não coincidem.');
+                        return;
+                      }
+
+                      // Check duplicates
+                      const userExists = registeredUsers.some(
+                        (u) => u.username.toLowerCase() === userVal.toLowerCase()
+                      );
+
+                      if (userExists) {
+                        alert('Este pseudônimo de investigador já está registrado.');
+                        return;
+                      }
+
+                      // Create and register new user
+                      const newUser = {
+                        username: userVal,
+                        passwordHash: passVal,
+                        role: 'user' as const
+                      };
+
+                      setRegisteredUsers((prev) => [...prev, newUser]);
+                      setCurrentUser({ name: newUser.username, role: newUser.role });
+                      triggerNotification(`🕵️‍♂️ Novo Investigador "${newUser.username}" catalogado!`);
+                    }}
+                    className="space-y-4 text-left animate-fade-in"
+                  >
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Definir Novo Pseudônimo:</label>
+                      <input 
+                        type="text" 
+                        name="username"
+                        placeholder="Ex: Beatriz_Alves"
+                        className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#7C3AED] font-mono leading-none"
+                        required
+                        maxLength={25}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Criar Nova Senha:</label>
+                      <input 
+                        type="password" 
+                        name="password"
+                        placeholder="Crie uma senha confidencial"
+                        className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#7C3AED] font-mono leading-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-mono font-bold text-slate-400 block uppercase">Confirmar Nova Senha:</label>
+                      <input 
+                        type="password" 
+                        name="confirm_password"
+                        placeholder="Confirme a senha escolhida"
+                        className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#7C3AED] font-mono leading-none"
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3.5 bg-purple-900 hover:bg-purple-800 text-white font-mono text-xs uppercase font-extrabold tracking-wider rounded-xl transition-transform active:scale-98 shadow-lg cursor-pointer mt-4"
+                    >
+                      Registrar Nova Credencial
+                    </button>
+                  </form>
+                )}
+
+                <div className="text-center pt-4 border-t border-zinc-900 mt-6 animate-pulse">
+                  <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
+                    Nenhum dado é compartilhado publicamente. Operações seguras sob curadoria privada e inviolável do Dossiê Psique.
+                  </p>
+                </div>
               </div>
             )}
           </section>
