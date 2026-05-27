@@ -33,7 +33,7 @@ export default function App() {
   });
 
   // UI / Navigation & view router
-  const [currentView, setCurrentView] = useState<'home' | 'catalog' | 'tracking' | 'faq' | 'book-detail'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'catalog' | 'tracking' | 'faq' | 'book-detail' | 'author-detail'>('home');
   const [selectedBookForPage, setSelectedBookForPage] = useState<Book | null>(null);
 
   // Authentication State
@@ -605,39 +605,26 @@ export default function App() {
               {/* Cover Column */}
               <div className="md:col-span-5 flex flex-col items-center">
                 <div 
-                  className="book-card-magic w-[140px] h-[210px] flex flex-col justify-between p-4 relative overflow-hidden select-none"
+                  className="w-[150px] aspect-[3/4] relative rounded-xl overflow-hidden shadow-xl border border-zinc-800 select-none flex flex-col justify-between"
                   style={{
                     background: selectedDetailBook.coverImage 
                       ? 'none' 
-                      : `linear-gradient(135deg, ${selectedDetailBook.coverStyle.gradientStart}, ${selectedDetailBook.coverStyle.gradientEnd})`,
-                    color: '#FFFFFF'
+                      : `linear-gradient(135deg, ${selectedDetailBook.coverStyle.gradientStart}, ${selectedDetailBook.coverStyle.gradientEnd})`
                   }}
                 >
-                  {selectedDetailBook.coverImage && (
+                  {selectedDetailBook.coverImage ? (
                     <img src={selectedDetailBook.coverImage} alt={selectedDetailBook.title} className="absolute inset-0 w-full h-full object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                      <LucideIcon 
+                        name={selectedDetailBook.coverStyle.iconName || 'Sparkles'} 
+                        size={32} 
+                        className="text-white/20" 
+                      />
+                    </div>
                   )}
-                  <div className="book-bound-spine" />
-                  <div className="book-pages-stack" />
-                  
-                  <div>
-                    <span className="text-[7px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-black/45 border border-white/20">
-                      {selectedDetailBook.category}
-                    </span>
-                  </div>
-
-                  <div className="my-auto py-2">
-                    <h4 className="font-serif font-black text-xs sm:text-sm leading-tight drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
-                      {selectedDetailBook.title}
-                    </h4>
-                    <p className="text-[9px] mt-1 font-mono opacity-90 drop-shadow">
-                      por {selectedDetailBook.author}
-                    </p>
-                  </div>
-
-                  <div className="flex justify-between items-center text-[8px] font-mono border-t border-white/20 pt-1">
-                    <span>R$ {selectedDetailBook.price.toFixed(2)}</span>
-                    <LucideIcon name={selectedDetailBook.coverStyle.iconName || 'Sparkles'} size={12} />
-                  </div>
+                  {/* Spine overlay simulating physical book binding */}
+                  <div className="absolute top-0 bottom-0 left-0 w-2.5 bg-black/15 border-r border-white/5 shadow-[inset_-1px_0_1px_rgba(255,255,255,0.05)] z-20 pointer-events-none" />
                 </div>
 
                 <div className="flex items-center gap-2 mt-4 text-xs font-mono text-stone-500">
@@ -667,7 +654,21 @@ export default function App() {
                 </h3>
 
                 <p className="text-xs font-mono text-stone-400">
-                  Escrito por <span className="text-amber-900 font-bold">{selectedDetailBook.author}</span>
+                  Escrito por{" "}
+                  {selectedDetailBook.author.toLowerCase() === 'guigoto monteiro' ? (
+                    <button
+                      onClick={() => {
+                        setSelectedDetailBook(null);
+                        setCurrentView('author-detail');
+                        window.scrollTo(0, 0);
+                      }}
+                      className="text-amber-900 font-bold underline hover:text-amber-700 cursor-pointer transition-colors"
+                    >
+                      {selectedDetailBook.author}
+                    </button>
+                  ) : (
+                    <span className="text-amber-900 font-bold">{selectedDetailBook.author}</span>
+                  )}
                 </p>
 
                 <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-serif">
@@ -1039,6 +1040,7 @@ export default function App() {
                   <ThreeDLaunchBook 
                     onAddToCart={handleAddToCart} 
                     onOpenBookDetails={(book) => { setSelectedBookForPage(book); setCurrentView('book-detail'); window.scrollTo(0,0); }} 
+                    onOpenAuthorDetail={() => { setCurrentView('author-detail'); window.scrollTo(0, 0); }}
                   />
                 </div>
               </div>
@@ -1203,21 +1205,90 @@ export default function App() {
                     <button onClick={() => { setSearchQuery(''); setSelectedCategory('Todas'); }} className="mt-4 text-xs font-bold text-[#EF4444] hover:underline">Restaurar Filtros</button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
                     {filteredBooks.map((book) => (
-                      <BookCard 
-                        key={book.id}
-                        book={book}
-                        onLike={handleLike}
-                        onAddComment={handleAddComment}
-                        onAddToCart={handleAddToCart}
-                        isAdmin={isAdminMode}
-                        onEdit={handleTriggerEdit}
-                        onDelete={handleDeleteBook}
-                        onMoveUp={handleMoveUp}
-                        onMoveDown={handleMoveDown}
-                        onSelect={(b) => { setSelectedBookForPage(b); setCurrentView('book-detail'); window.scrollTo(0,0); }}
-                      />
+                      <div key={book.id} className="relative group">
+                        <div 
+                          onClick={() => { 
+                            setSelectedBookForPage(book); 
+                            setCurrentView('book-detail'); 
+                            window.scrollTo(0,0); 
+                          }}
+                          title={`${book.title} - por ${book.author}`}
+                          className="w-full aspect-[3/4] relative rounded-xl overflow-hidden bg-zinc-950 border border-zinc-200 shadow-md hover:shadow-2xl hover:scale-[1.04] transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                          style={{
+                            background: book.coverImage 
+                              ? 'none' 
+                              : `linear-gradient(135deg, ${book.coverStyle.gradientStart}, ${book.coverStyle.gradientEnd})`
+                          }}
+                        >
+                          {book.coverImage ? (
+                            <img 
+                              src={book.coverImage} 
+                              alt={book.title} 
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                              <LucideIcon 
+                                name={book.coverStyle.iconName || 'BookOpen'} 
+                                size={32} 
+                                className="text-white/20 group-hover:text-white/40 group-hover:scale-110 transition-all duration-300"
+                              />
+                            </div>
+                          )}
+                          
+                          {/* Book spine overlay to simulate clean physical book binds */}
+                          <div className="absolute top-0 bottom-0 left-0 w-2.5 bg-black/15 border-r border-white/5 shadow-[inset_-1px_0_1px_rgba(255,255,255,0.05)] z-20 pointer-events-none" />
+                        </div>
+
+                        {/* Admin Quick controls floating on top of the covers, only when logged in as admin */}
+                        {isAdminMode && (
+                          <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30 bg-black/85 rounded-lg p-1 border border-zinc-800 shadow-md">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMoveUp(book.id);
+                              }}
+                              className="p-1 rounded text-slate-350 hover:bg-zinc-800 hover:text-white cursor-pointer"
+                              title="Mover acima"
+                            >
+                              <LucideIcon name="ArrowUp" size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMoveDown(book.id);
+                              }}
+                              className="p-1 rounded text-slate-350 hover:bg-zinc-800 hover:text-white cursor-pointer"
+                              title="Mover abaixo"
+                            >
+                              <LucideIcon name="ArrowDown" size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTriggerEdit(book);
+                              }}
+                              className="p-1 rounded text-amber-400 hover:bg-zinc-800 cursor-pointer"
+                              title="Editar"
+                            >
+                              <LucideIcon name="Edit" size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteBook(book.id);
+                              }}
+                              className="p-1 rounded text-red-500 hover:bg-zinc-800 cursor-pointer"
+                              title="Deletar"
+                            >
+                              <LucideIcon name="Trash2" size={12} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -1623,7 +1694,140 @@ export default function App() {
           </section>
         )}
 
-        {/* VIEW 5: SINGLE BOOK DETAIL PAGE */}
+        {/* VIEW 4.5: ANONYMOUS AUTHOR BIOGRAPHY PAGE (GUIGOTO MONTEIRO) */}
+        {currentView === 'author-detail' && (
+          <section className="py-12 px-4 max-w-4xl mx-auto min-h-[75vh]">
+            <div className="text-left bg-[#0E1015] border-2 border-red-950 p-6 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+              
+              {/* Crime Scene Tape / Aesthetic Top Border Accent */}
+              <div className="absolute top-0 left-0 right-0 h-2.5 bg-stripes-yellow-black opacity-80" />
+              
+              {/* Backdrop forensic watermark */}
+              <div className="absolute right-[-30px] bottom-[-20px] text-[130px] font-black tracking-tighter text-[#EF4444]/3 font-mono uppercase select-none pointer-events-none">
+                PROFILER
+              </div>
+
+              {/* Back to Catalog button */}
+              <div className="flex items-center justify-between pb-5 border-b border-zinc-800 mb-8 z-10 relative">
+                <button
+                  onClick={() => { setCurrentView('catalog'); }}
+                  className="flex items-center gap-1.5 text-xs font-mono font-bold text-red-500 hover:text-red-400 group cursor-pointer"
+                >
+                  <LucideIcon name="ChevronLeft" size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                  <span>Sair do Arquivo / Voltar ao Catálogo</span>
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-ping" />
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#EF4444] font-black bg-[#EF4444]/10 border border-[#EF4444]/20 rounded px-2 py-0.5">CLASSIFICADO • RESTRITO</span>
+                </div>
+              </div>
+
+              {/* Grid content detailing Author profile */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 relative z-10">
+                
+                {/* Profile Mugshot column */}
+                <div className="md:col-span-4 flex flex-col items-center">
+                  <div className="w-full aspect-[3/4] max-w-[200px] bg-[#171A21] border border-[#2D303D] rounded-xl flex flex-col justify-between p-4 shadow-inner relative overflow-hidden">
+                    
+                    {/* Shadow figure profile representing anonymous author */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                      <svg viewBox="0 0 100 100" className="w-24 h-24 text-zinc-700 opacity-60">
+                        <path fill="currentColor" d="M50,15 C41.7,15 35,21.7 35,30 C35,38.3 41.7,45 50,45 C58.3,45 65,38.3 65,30 C65,21.7 58.3,15 50,15 Z M50,49 C39.5,49 20,54.2 20,64.7 L20,72 L80,72 L80,64.7 C80,54.2 60.5,49 50,49 Z" />
+                      </svg>
+                    </div>
+
+                    <div className="z-10 bg-black/60 border border-white/5 px-2 py-0.5 rounded text-[8px] font-mono text-center text-slate-300 uppercase tracking-wider mx-auto">
+                      RETRETO DO DOSSIÊ
+                    </div>
+                    
+                    <div className="z-10 mt-auto bg-red-950/85 border border-[#EF4444]/35 text-red-100 p-2 rounded text-center text-[10px] font-mono uppercase tracking-wider font-extrabold shadow-md">
+                      GUIGOTO MONTEIRO
+                    </div>
+                  </div>
+
+                  {/* Fictional stats summary */}
+                  <div className="w-full max-w-[200px] mt-6 space-y-2.5 bg-black/35 border border-zinc-800 p-4 rounded-xl text-left">
+                    <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest block border-b border-zinc-800 pb-1.5">FICHA DO PROFILER:</span>
+                    <div className="text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between text-slate-400">
+                        <span>ESTILO:</span>
+                        <span className="text-red-400 font-bold">Suspense/Dark</span>
+                      </p>
+                      <p className="flex justify-between text-slate-400">
+                        <span>PÁTRIA:</span>
+                        <span className="text-slate-300">Brasil</span>
+                      </p>
+                      <p className="flex justify-between text-slate-400">
+                        <span>STATUS:</span>
+                        <span className="text-emerald-400 font-bold">ATIVO</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trajectory description column */}
+                <div className="md:col-span-8 space-y-6">
+                  
+                  <div>
+                    <span className="text-[10px] uppercase font-mono tracking-widest font-bold text-slate-500">DEPOIMENTO CURATORIAL</span>
+                    <h2 className="font-serif font-black text-2xl sm:text-3xl text-slate-100 leading-tight mt-1">
+                      O Escritor Atrás da Cortina Oculta
+                    </h2>
+                    <div className="h-0.5 w-16 bg-red-800/80 mt-2" />
+                  </div>
+
+                  <div className="bg-[#14161F] border border-zinc-800 p-5 rounded-2xl">
+                    <span className="text-[10px] font-mono font-bold text-red-500 uppercase tracking-widest block mb-2 flex items-center gap-1">
+                      <LucideIcon name="History" size={13} />
+                      <span>TRAJETÓRIA LITERÁRIA:</span>
+                    </span>
+                    <p className="text-xs sm:text-sm text-slate-300 font-mono leading-relaxed space-y-4">
+                      Iniciado em laboratórios silenciosos de análise psicológica e debruçado sobre a sociologia fenomenológica do crime, guigoto monteiro moldou um viés autoral único na ficção brasileira de mistério. 
+                      Enxergou nas palavras o bisturi elementar para autópsias mentais, arquitetando segredos criminais, fitas amarelas de polícia e tramas de atração obsessiva em laboradas experiências literárias.
+                    </p>
+                    <p className="text-xs sm:text-sm text-slate-300 font-mono leading-relaxed mt-3">
+                      Sua trajetória de investigação originou os três imponentes marcos literários deste restrito acervo: "Diga Seu Nome", "Mon Amour" e "Laços Invisíveis". 
+                      Sem a poluição de falsas propagandas do varejo, guigoto opera na purificação forense literária. Suas obras representam dossiês cuidadosamente selados sob a sua estreita curadoria pessoal, entregues apenas para leitores seletos obstinados por suspenses cortantes.
+                    </p>
+                  </div>
+
+                  {/* Curated books written by him section with link capabilities */}
+                  <div className="space-y-3">
+                    <h3 className="font-serif font-bold text-sm text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <LucideIcon name="Layers" size={15} className="text-red-500" />
+                      <span>Evidências Literárias Catalogadas ({books.filter(b => b.author.toLowerCase() === 'guigoto monteiro').length})</span>
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {books.filter(b => b.author.toLowerCase() === 'guigoto monteiro').map((book) => (
+                        <div 
+                          key={book.id} 
+                          onClick={() => { setSelectedBookForPage(book); setCurrentView('book-detail'); window.scrollTo(0, 0); }}
+                          className="bg-black/40 hover:bg-black/60 border border-zinc-800 hover:border-red-500/30 p-3 rounded-xl cursor-pointer transition-all duration-300 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left group"
+                        >
+                          <div className="w-12 aspect-[3/4] shrink-0 relative rounded-md overflow-hidden bg-zinc-950 border border-white/5 group-hover:scale-105 transition-transform">
+                            {book.coverImage && (
+                              <img src={book.coverImage} className="w-full h-full object-cover" />
+                            )}
+                            <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-black/15 border-r border-white/5 z-20" />
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h4 className="text-xs font-serif font-black text-slate-200 group-hover:text-red-400 transition-colors truncate">{book.title}</h4>
+                            <span className="text-[9px] font-mono text-slate-500 block mt-0.5">{book.category}</span>
+                            <span className="text-[10px] font-mono text-[#D97706] block mt-1 font-bold">R$ {book.price.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          </section>
+        )}
         {currentView === 'book-detail' && selectedBookForPage && (
           <section className="py-12 px-4 max-w-5xl mx-auto min-h-[75vh]">
             <div className="text-left bg-[#12131A] border border-[#2D303D] p-6 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
@@ -1647,48 +1851,31 @@ export default function App() {
                 {/* Book Cover Design */}
                 <div className="md:col-span-4 flex justify-center items-start">
                   <div 
-                    className="book-card-magic w-[220px] h-[320px] shrink-0 flex flex-col justify-between p-6 text-left relative overflow-hidden shadow-2xl select-none"
+                    className="w-[220px] aspect-[3/4] shrink-0 relative rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 select-none flex flex-col justify-between"
                     style={{
                       background: selectedBookForPage.coverImage 
                         ? 'none' 
-                        : `linear-gradient(135deg, ${selectedBookForPage.coverStyle.gradientStart}, ${selectedBookForPage.coverStyle.gradientEnd})`,
-                      color: '#FFFFFF'
+                        : `linear-gradient(135deg, ${selectedBookForPage.coverStyle.gradientStart}, ${selectedBookForPage.coverStyle.gradientEnd})`
                     }}
                   >
-                    {selectedBookForPage.coverImage && (
+                    {selectedBookForPage.coverImage ? (
                       <img 
                         src={selectedBookForPage.coverImage} 
                         alt={selectedBookForPage.title} 
                         className="absolute inset-0 w-full h-full object-cover"
                         referrerPolicy="no-referrer"
                       />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                        <LucideIcon 
+                          name={selectedBookForPage.coverStyle.iconName || 'BookOpen'} 
+                          size={44} 
+                          className="text-white/20" 
+                        />
+                      </div>
                     )}
-
-                    <div className="book-bound-spine" />
-                    <div className="book-pages-stack" />
-                    <div className="absolute top-3 right-3 opacity-30 z-10">
-                      <LucideIcon name="Bookmark" size={24} />
-                    </div>
-
-                    <div className="z-10">
-                      <span className="text-[10px] uppercase tracking-widest font-mono px-2.5 py-1 rounded-full bg-black/60 border border-white/20 text-[#EF4444] font-bold">
-                        {selectedBookForPage.category}
-                      </span>
-                    </div>
-
-                    <div className="z-10 my-auto drop-shadow-[0_3px_5px_rgba(0,0,0,0.95)]">
-                      <h4 className="font-serif font-black text-sm sm:text-base leading-snug tracking-normal line-clamp-3 text-white">
-                        {selectedBookForPage.title}
-                      </h4>
-                      <p className="text-[10px] mt-1.5 font-mono text-slate-300 opacity-90">
-                        por {selectedBookForPage.author}
-                      </p>
-                    </div>
-
-                    <div className="z-10 flex justify-between items-center border-t border-white/20 pt-2 mt-1">
-                      <span className="text-[9px] font-mono text-slate-300 opacity-80">Dossiê Exclusivo</span>
-                      <LucideIcon name={selectedBookForPage.coverStyle.iconName || 'BookOpen'} size={15} className="text-[#EF4444]" />
-                    </div>
+                    {/* Spine overlay simulating physical book binding */}
+                    <div className="absolute top-0 bottom-0 left-0 w-3 bg-black/15 border-r border-white/5 shadow-[inset_-1px_0_1px_rgba(255,255,255,0.05)] z-20 pointer-events-none" />
                   </div>
                 </div>
 
@@ -1722,7 +1909,22 @@ export default function App() {
                     <h2 className="font-serif font-black text-2xl sm:text-4xl text-slate-100 leading-tight">
                       {selectedBookForPage.title}
                     </h2>
-                    <p className="text-sm font-mono text-red-500 mt-1">Escriturado sob custódia de <span className="underline font-bold text-slate-200">{selectedBookForPage.author}</span></p>
+                    <p className="text-sm font-mono text-red-500 mt-1">
+                      Escriturado sob custódia de{" "}
+                      {selectedBookForPage.author.toLowerCase() === 'guigoto monteiro' ? (
+                        <button
+                          onClick={() => {
+                            setCurrentView('author-detail');
+                            window.scrollTo(0, 0);
+                          }}
+                          className="underline font-bold text-slate-200 hover:text-red-400 cursor-pointer transition-colors"
+                        >
+                          {selectedBookForPage.author}
+                        </button>
+                      ) : (
+                        <span className="font-bold text-slate-200">{selectedBookForPage.author}</span>
+                      )}
+                    </p>
 
                     <div className="my-6 p-4 bg-zinc-950/40 rounded-xl border border-zinc-800">
                       <span className="text-[10px] font-mono font-bold text-slate-400 block mb-2 uppercase tracking-widest">RESUMO CLÍNICO / ANÁLISE DO LIVRO:</span>

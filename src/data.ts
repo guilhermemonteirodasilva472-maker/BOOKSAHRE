@@ -54,11 +54,11 @@ const DIGA_SEU_NOME_SVG = `
     <path d="M -30 -10 A 35 35 0 0 1 -5 -33" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.5" />
   </g>
 
-  <text x="200" y="215" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">DIGA SEU</text>
-  <text x="200" y="258" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" fill="#EF4444" text-anchor="middle" letter-spacing="3">NOME</text>
+  <text x="200" y="215" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="2" opacity="0"></text>
+  <text x="200" y="258" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" fill="#EF4444" text-anchor="middle" letter-spacing="3" opacity="0"></text>
   
-  <text x="200" y="495" font-family="'Courier New', monospace" font-size="11" font-weight="bold" fill="#94A3B8" text-anchor="middle" letter-spacing="1">UM THRILLER PSICOLÓGICO DE</text>
-  <text x="200" y="520" font-family="'Georgia', serif" font-size="17" font-weight="bold" fill="#F8FAFC" text-anchor="middle" letter-spacing="2">guigoto monteiro</text>
+  <text x="200" y="495" font-family="'Courier New', monospace" font-size="11" font-weight="bold" fill="#94A3B8" text-anchor="middle" letter-spacing="1" opacity="0"></text>
+  <text x="200" y="520" font-family="'Georgia', serif" font-size="17" font-weight="bold" fill="#F8FAFC" text-anchor="middle" letter-spacing="2" opacity="0"></text>
 
   <line x1="120" y1="535" x2="280" y2="535" stroke="#EF4444" stroke-width="1.5" opacity="0.5" />
   <circle cx="200" cy="535" r="3" fill="#EF4444" />
@@ -119,11 +119,11 @@ const MON_AMOUR_SVG = `
     <polygon points="25,32 28,26 22,31" fill="#BE185D" />
   </g>
 
-  <text x="200" y="190" font-family="'Georgia', serif" font-weight="900" font-size="52" fill="#EC4899" text-anchor="middle" letter-spacing="6">MON</text>
-  <text x="200" y="245" font-family="'Georgia', serif" font-weight="900" font-size="52" fill="#FFFFFF" text-anchor="middle" letter-spacing="8">AMOUR</text>
+  <text x="200" y="190" font-family="'Georgia', serif" font-weight="900" font-size="52" fill="#EC4899" text-anchor="middle" letter-spacing="6" opacity="0"></text>
+  <text x="200" y="245" font-family="'Georgia', serif" font-weight="900" font-size="52" fill="#FFFFFF" text-anchor="middle" letter-spacing="8" opacity="0"></text>
 
-  <text x="200" y="495" font-family="'Courier New', monospace" font-size="9.5" font-weight="900" fill="#F472B6" text-anchor="middle" letter-spacing="2">UM IMPLACÁVEL DARK ROMANCE DE</text>
-  <text x="200" y="522" font-family="'Georgia', serif" font-size="18" font-weight="bold" fill="#FCE7F3" text-anchor="middle" letter-spacing="3">guigoto monteiro</text>
+  <text x="200" y="495" font-family="'Courier New', monospace" font-size="9.5" font-weight="900" fill="#F472B6" text-anchor="middle" letter-spacing="2" opacity="0"></text>
+  <text x="200" y="522" font-family="'Georgia', serif" font-size="18" font-weight="bold" fill="#FCE7F3" text-anchor="middle" letter-spacing="3" opacity="0"></text>
 
   <line x1="140" y1="540" x2="260" y2="540" stroke="#BE185D" stroke-width="1" opacity="0.6" />
   <path d="M 200 534 L 200 546 M 194 540 L 206 540" stroke="#EC4899" stroke-width="1.5" />
@@ -161,11 +161,11 @@ const LACOS_INVISIVEIS_SVG = `
     <path d="M -10 -25 C -5 -5 12 0 20 15" fill="none" stroke="#B91C1C" stroke-width="1.5" opacity="0.8" />
   </g>
 
-  <text x="200" y="185" font-family="'Georgia', serif" font-weight="bold" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">LAÇOS</text>
-  <text x="200" y="235" font-family="'Georgia', serif" font-weight="bold" font-size="38" fill="#EF4444" text-anchor="middle" letter-spacing="5">INVISÍVEIS</text>
+  <text x="200" y="185" font-family="'Georgia', serif" font-weight="bold" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="4" opacity="0"></text>
+  <text x="200" y="235" font-family="'Georgia', serif" font-weight="bold" font-size="38" fill="#EF4444" text-anchor="middle" letter-spacing="5" opacity="0"></text>
 
-  <text x="200" y="495" font-family="'Courier New', monospace" font-size="9.5" font-weight="bold" fill="#94A3B8" text-anchor="middle" letter-spacing="1.5">UM SUSPENSE PSICOLÓGICO DE</text>
-  <text x="200" y="522" font-family="'Georgia', serif" font-size="18" font-weight="bold" fill="#F8FAFC" text-anchor="middle" letter-spacing="2">guigoto monteiro</text>
+  <text x="200" y="495" font-family="'Courier New', monospace" font-size="9.5" font-weight="bold" fill="#94A3B8" text-anchor="middle" letter-spacing="1.5" opacity="0"></text>
+  <text x="200" y="522" font-family="'Georgia', serif" font-size="18" font-weight="bold" fill="#F8FAFC" text-anchor="middle" letter-spacing="2" opacity="0"></text>
 
   <line x1="160" y1="540" x2="240" y2="540" stroke="#475569" stroke-width="1" opacity="0.5" />
   <polygon points="200,537 203,540 200,543 197,540" fill="#EF4444" />

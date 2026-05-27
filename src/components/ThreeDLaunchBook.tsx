@@ -6,6 +6,7 @@ import LucideIcon from './LucideIcon';
 interface ThreeDLaunchBookProps {
   onAddToCart: (book: Book) => void;
   onOpenBookDetails?: (book: Book) => void;
+  onOpenAuthorDetail?: () => void;
 }
 
 export const LAUNCH_BOOK: Book = {
@@ -32,7 +33,7 @@ export const LAUNCH_BOOK: Book = {
   createdAt: new Date().toISOString()
 };
 
-export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails }: ThreeDLaunchBookProps) {
+export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails, onOpenAuthorDetail }: ThreeDLaunchBookProps) {
   const [copied, setCopied] = useState(false);
   const discountPrice = LAUNCH_BOOK.price * (1 - (LAUNCH_BOOK.discount || 0) / 100);
 
@@ -69,7 +70,12 @@ export default function ThreeDLaunchBook({ onAddToCart, onOpenBookDetails }: Thr
           </h3>
 
           <p className="text-slate-400 text-xs font-mono">
-            por <span className="font-serif font-bold text-red-500">{LAUNCH_BOOK.author}</span>
+            por <button 
+              onClick={() => onOpenAuthorDetail && onOpenAuthorDetail()}
+              className="font-serif font-bold text-red-500 hover:text-red-400 underline cursor-pointer transition-colors"
+            >
+              {LAUNCH_BOOK.author}
+            </button>
           </p>
 
           <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-sans font-normal">
